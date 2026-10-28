@@ -1,0 +1,1897 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Reflex: a System Zero decision model that answers typed questions on an FPGA in a fixed number of clock cycles.">
+<meta property="og:title" content="Reflex Docs">
+<meta property="og:description" content="A System Zero model: typed questions in, typed answers out, decided in the data path on an FPGA.">
+<meta name="twitter:card" content="summary">
+<title>Reflex Docs</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: Cloudflare-docs register. Sticky top bar, left filterable page list, centre reading column, right "On this page". Pages switch on location.hash. */
+:root{
+  --bg:#ffffff; --side:#fbfbfb; --surface:#ffffff; --fg:#1d1d1f; --muted:#6b6b70; --line:#e6e6e8; --hover:#f2f2f3;
+  --accent:#f6821f; --accent-ink:#ffffff; --link:#c9520a; --accent-soft:#fff3e9;
+  --clock:#b4530b; --clock-soft:#fff4ec; --ok:#17794a; --ok-soft:#ebf7f0; --note:#f6f6f7;
+  --code-bg:#f7f7f8; --code-fg:#1f2328; --code-kw:#cf222e; --code-str:#0a3069; --code-cm:#6e7781; --code-num:#953800;
+  --display:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#151517; --side:#18181a; --surface:#1c1c1f; --fg:#ececee; --muted:#a2a2a8; --line:#2c2c30; --hover:#242428;
+  --accent:#f6821f; --accent-ink:#ffffff; --link:#ff9c55; --accent-soft:#3a2414;
+  --clock:#ffb070; --clock-soft:#2e2014; --ok:#5fd394; --ok-soft:#12291d; --note:#202024;
+  --code-bg:#1c1c1f; --code-fg:#e6e6ea; --code-kw:#ff8f86; --code-str:#9ecbff; --code-cm:#8b8b93; --code-num:#ffb86c; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#151517; --side:#18181a; --surface:#1c1c1f; --fg:#ececee; --muted:#a2a2a8; --line:#2c2c30; --hover:#242428;
+  --accent:#f6821f; --accent-ink:#ffffff; --link:#ff9c55; --accent-soft:#3a2414;
+  --clock:#ffb070; --clock-soft:#2e2014; --ok:#5fd394; --ok-soft:#12291d; --note:#202024;
+  --code-bg:#1c1c1f; --code-fg:#e6e6ea; --code-kw:#ff8f86; --code-str:#9ecbff; --code-cm:#8b8b93; --code-num:#ffb86c; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+a{color:var(--link);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--link) 40%,transparent);text-underline-offset:3px}
+a:hover{text-decoration-color:var(--link)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:28px;height:64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--fg)}
+.brand .word{font-weight:800;letter-spacing:.14em;font-size:17px}
+.brand .docs{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+.top .sp{flex:1}
+.search{display:flex;align-items:center;gap:10px;min-width:220px;height:40px;padding:0 10px 0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--muted);font:inherit;font-size:14px;cursor:pointer}
+.search svg{flex:none}
+.search .lbl{flex:1;text-align:left}
+kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--muted);background:var(--bg)}
+.searchwrap{position:relative}
+.spanel{position:absolute;right:0;top:calc(100% + 8px);width:min(520px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.12);overflow:hidden;z-index:12}
+.spanel input{width:100%;height:48px;border:0;border-bottom:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:16px;padding:0 16px;outline:none}
+.sres{max-height:min(60vh,460px);overflow-y:auto;padding:6px}
+.sres a{display:block;padding:10px 12px;border-radius:8px;text-decoration:none;color:var(--fg)}
+.sres a .w{display:block;font-size:13px;color:var(--muted)}
+.sres a .t{display:block;font-weight:600;font-size:15px}
+.sres a .x{display:block;font-size:14px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sres a mark{background:var(--accent-soft);color:var(--fg);border-radius:3px;padding:0 1px}
+.sres a.sel,.sres a:hover{background:var(--hover)}
+.shint{color:var(--muted);font-size:14px;margin:8px 10px}
+.menu{display:none;background:none;border:1px solid var(--line);border-radius:8px;color:var(--fg);padding:6px 10px;font:inherit;font-size:14px}
+
+/* three columns */
+.shell{display:grid;grid-template-columns:280px minmax(0,1fr) 230px;min-height:calc(100vh - 64px)}
+nav.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 64px);align-self:start;height:calc(100vh - 64px);overflow-y:auto;background:var(--side);border-right:1px solid var(--line);padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:16px;font-size:15px}
+.filter{position:relative;margin:0 0 18px}
+.filter input{width:100%;height:42px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);font:inherit;font-size:15px;padding:0 40px 0 12px}
+.filter input::placeholder{color:var(--muted)}
+.filter kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%)}
+nav.rail h5{margin:20px 0 4px;padding:0 10px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+nav.rail a{display:block;padding:8px 10px;border-radius:8px;color:var(--muted);text-decoration:none;line-height:1.35}
+nav.rail a:hover{background:var(--hover);color:var(--fg)}
+nav.rail a.on{background:var(--hover);color:var(--fg);font-weight:600}
+nav.rail .empty{color:var(--muted);font-size:14px;padding:8px 10px}
+
+main{min-width:0;padding-block:28px 96px;padding-inline:clamp(16px,5vw,72px)}
+article{display:none;max-width:780px}
+article.on{display:block}
+.eyebrow{display:none}
+.crumbs{display:flex;flex-wrap:wrap;gap:8px;font-size:15px;color:var(--muted);margin:0 0 26px}
+.crumbs a{color:var(--muted);text-decoration:none}
+.crumbs a:hover{color:var(--fg)}
+.crumbs .cur{color:var(--fg);font-weight:500}
+h1{font-family:var(--display);font-size:2.6rem;font-weight:700;line-height:1.12;letter-spacing:-.025em;margin:0 0 6px;text-wrap:balance}
+.pagehead{display:flex;gap:22px;align-items:center;margin:0 0 6px}
+.avatar{flex:none;width:84px;height:84px;border-radius:12px;background:var(--hover);display:grid;place-items:center;font-size:30px;font-weight:700;color:var(--muted)}
+.pagehead .sub{color:var(--muted);font-size:17px;margin:0}
+.pagehead h1{margin:0 0 4px}
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:0;margin:18px 0 0;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.actions button{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:2px 16px;font:inherit;font-size:15px;color:var(--muted);cursor:pointer}
+.actions button:first-child{padding-left:0}
+.actions button + button{border-left:1px solid var(--line)}
+.actions button:hover{color:var(--fg)}
+.idchip{display:inline-flex;align-items:center;gap:12px;margin-top:22px!important;font-family:var(--mono);font-size:15px;border:1px solid var(--line);border-radius:10px;padding:9px 14px;margin:0 0 18px;background:var(--surface);color:var(--fg)}
+.idchip button{background:none;border:0;padding:0;color:var(--muted);cursor:pointer;display:inline-flex}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
+.tag{font-size:14px;background:var(--hover);color:var(--muted);border-radius:8px;padding:3px 10px}
+.lede{font-size:1.2rem;color:var(--fg);margin:0 0 26px;line-height:1.6}
+h2.part{margin-top:64px;font-size:1.85rem;padding-top:28px;border-top:1px solid var(--line)}
+.sublede{font-size:1.1rem;color:var(--muted);margin:0 0 22px;line-height:1.55}
+[id]{scroll-margin-top:84px}
+h2{font-family:var(--display);font-size:1.55rem;font-weight:700;letter-spacing:-.018em;margin:44px 0 12px;text-wrap:balance;scroll-margin-top:84px}
+h3{font-size:1.18rem;font-weight:600;margin:30px 0 8px;text-wrap:balance;scroll-margin-top:84px}
+h4{font-size:1rem;font-weight:600;margin:20px 0 6px}
+p{margin:0 0 16px}
+ul,ol{padding-left:22px;margin:0 0 16px}
+li{margin-bottom:6px}
+strong{font-weight:600}
+code{font-family:var(--mono);font-size:.86em;background:var(--hover);padding:2px 6px;border-radius:5px}
+pre{background:var(--code-bg);color:var(--code-fg);border:1px solid var(--line);border-radius:10px;padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.6;margin:0 0 18px}
+pre code{background:none;padding:0;font-size:inherit;color:inherit}
+pre .k{color:var(--code-kw)} pre .s{color:var(--code-str)} pre .c{color:var(--code-cm);font-style:italic} pre .n{color:var(--code-num)}
+.tabs{margin:0 0 18px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.tabs .bar{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--line);background:var(--surface);padding:0 6px}
+.tabs .bar button{font:inherit;font-size:14px;font-weight:500;padding:10px 12px;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;margin-bottom:-1px}
+.tabs .bar button.on{color:var(--fg);border-bottom-color:var(--accent)}
+.tabs pre{border:0;border-radius:0;margin:0;display:none}
+.tabs pre.on{display:block}
+.pre-label{font-family:var(--mono);font-size:12px;color:var(--muted);margin:0 0 6px;padding:0;border:0;background:none}
+
+table{border-collapse:collapse;width:100%;font-size:15px;margin:0 0 20px}
+.tw{overflow-x:auto;margin:0 0 22px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.tw table{margin:0}
+th,td{text-align:left;padding:13px 18px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-weight:600;color:var(--fg);background:var(--side)}
+td code{white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.info th{font-size:16px;background:var(--side)}
+.info td:first-child{width:38%;color:var(--fg)}
+
+.note{background:var(--note);padding:14px 18px;border-radius:10px;margin:0 0 18px;font-size:15px;border:1px solid var(--line)}
+.note.clock{background:var(--clock-soft);border-color:color-mix(in srgb,var(--clock) 25%,transparent)}
+.note.ok{background:var(--ok-soft);border-color:color-mix(in srgb,var(--ok) 25%,transparent)}
+.note b{display:block;font-size:14px;font-weight:600;margin-bottom:4px;color:var(--fg)}
+.pill{display:inline-block;font-family:var(--body);font-size:12px;font-weight:500;padding:2px 9px;border-radius:7px;background:var(--hover);color:var(--muted);vertical-align:middle;margin-left:8px;letter-spacing:0}
+.pill.hw{background:var(--clock-soft);color:var(--clock)}
+.pill.sw{background:var(--ok-soft);color:var(--ok)}
+.field{border-top:1px solid var(--line);padding:12px 0}
+.field .nm{font-family:var(--mono);font-size:14px;font-weight:600}
+.field .ty{font-family:var(--mono);font-size:12px;color:var(--muted);margin-left:8px}
+.field .req{font-size:12px;color:var(--clock);margin-left:8px}
+.field p{margin:4px 0 0;font-size:15px}
+.next{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:36px}
+.next a{border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:block;color:var(--fg);background:var(--surface);text-decoration:none;font-weight:600}
+.next a span{display:block;font-size:14px;color:var(--muted);font-weight:400;margin-top:2px}
+.next a:hover{border-color:var(--accent)}
+pre.mermaid{background:var(--surface);color:var(--fg);padding:12px;overflow-x:auto}
+.timeline{font-family:var(--mono);font-size:13px;border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--code-bg);overflow-x:auto;white-space:pre;line-height:1.7;margin:0 0 18px;color:var(--fg)}
+
+/* on this page */
+aside.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 64px);align-self:start;max-height:calc(100vh - 64px);overflow-y:auto;padding:36px max(16px,env(safe-area-inset-right,0px)) 40px 8px;font-size:15px}
+aside.toc h6{margin:0 0 12px;font-size:16px;font-weight:600;color:var(--fg)}
+aside.toc a{display:block;padding:6px 0;color:var(--muted);text-decoration:none;line-height:1.35}
+aside.toc a.sub{padding-left:14px;font-size:14px}
+aside.toc a:hover{color:var(--fg)}
+aside.toc a.on{color:var(--link);font-weight:600}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:14px;z-index:20}
+
+@media (max-width:1240px){ .shell{grid-template-columns:260px minmax(0,1fr)} aside.toc{display:none} }
+@media (max-width:860px){
+  .shell{grid-template-columns:1fr}
+  nav.rail{display:none;position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+  nav.rail.open{display:block}
+  .menu{display:inline-block}
+  .search{min-width:0;width:40px;padding:0;justify-content:center}
+  .search .lbl,.search kbd{display:none}
+  .spanel{position:fixed;left:16px;right:16px;top:calc(env(safe-area-inset-top,0px) + 72px);width:auto}
+  .avatar{width:60px;height:60px;font-size:22px}
+  h1{font-size:2.1rem}
+  .top{gap:12px}
+}
+</style>
+
+<style>[hidden]{display:none!important} img{max-width:100%}</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#introduction"><span class="word">REFLEX</span><span class="docs">DOCS</span></a>
+  <span class="sp"></span>
+  <div class="searchwrap">
+    <button class="search" id="search" type="button" aria-label="Search the docs" aria-expanded="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="lbl">Search</span><kbd>⌘ K</kbd></button>
+    <div class="spanel" id="spanel" hidden>
+      <input id="sq" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off">
+      <div class="sres" id="sres"><p class="shint">Type to search every page.</p></div>
+    </div>
+  </div>
+  <button class="menu" id="menu" type="button" aria-expanded="false">Pages</button>
+</header>
+
+<div class="shell">
+<nav class="rail" id="rail" aria-label="Documentation">
+  <div class="filter"><input id="filter" type="search" placeholder="Filter sidebar" aria-label="Filter sidebar" autocomplete="off"><kbd>/</kbd></div>
+  <p class="empty" id="empty" hidden>No pages match.</p>
+  <h5>Get started</h5>
+  <a href="#introduction">Introduction</a>
+  <a href="#quickstart">Quick start</a>
+  <a href="#fabric">How the fabric works</a>
+  <h5>Concepts</h5>
+  <a href="#questions">State &amp; questions</a>
+  <a href="#confidence">Confidence &amp; timing</a>
+  <a href="#architecture">Architecture &amp; targets</a>
+  <h5>Engineer's guide</h5>
+  <a href="#designing">Designing for the fabric</a>
+  <a href="#blueprints">Blueprints</a>
+  <a href="#configuration">Configuration</a>
+  <h5>Reference</h5>
+  <a href="#api">API</a>
+  <a href="#sdks">SDKs</a>
+  <a href="#examples">Examples</a>
+  <h5>Build it yourself</h5>
+  <a href="#roadmap">Status &amp; milestones</a>
+  <a href="#toolkit">Emulator, recipes &amp; benchmark</a>
+</nav>
+
+<main>
+
+<article id="introduction">
+<p class="eyebrow">Get started</p>
+
+<div class="pagehead">
+  <div class="avatar" aria-hidden="true">R</div>
+  <div><h1>Reflex</h1><p class="sub">System Zero decision model • FPGA</p></div>
+</div>
+<div class="after-actions"></div>
+<div class="idchip"><span>reflex/reflex-1.0</span><button type="button" data-copy="reflex/reflex-1.0" aria-label="Copy model id"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></div>
+<div class="tags"><span class="tag">Open design</span><span class="tag">Cycle-deterministic</span><span class="tag">Emulator available</span></div>
+<p class="lede">Reflex is a <a href="#system-zero">System Zero model</a>: a decision model that lives in the data path. You send a <em>state</em> and typed <em>questions</em>; an FPGA answers in a fixed number of clock cycles, on a stream or a pin instead of a socket.</p>
+<div class="tw"><table class="info">
+<tr><th colspan="2">Model info</th></tr>
+<tr><td>Runs on</td><td>FPGA fabric: PolarFire, PolarFire SoC, RT PolarFire, Alveo; host-side emulator</td></tr>
+<tr><td>Question types</td><td>Choice, Score, Noul, Box, Pulse, Gate</td></tr>
+<tr><td>State buffer</td><td>256–8,192 tokens, fixed per bitstream (target)</td></tr>
+<tr><td>Question slots</td><td>Up to 256 per core, all evaluated in the same cycle (target)</td></tr>
+<tr><td>Latency</td><td>Fixed cycle count per bitstream, reported on every answer</td></tr>
+<tr><td>Outputs</td><td>JSON over HTTP, AXI4-Lite registers, AXI4-Stream, GPIO / interrupt</td></tr>
+<tr><td>Status</td><td>Open design; <a href="#toolkit">M0 emulator</a> runnable today</td></tr>
+</table></div>
+
+<p>Most machine decisions today are made by sending data to a processor and waiting. The processor schedules the work, runs a model, serialises a result, and sends it back. Every step adds latency, and none of it is the same twice. For a decision per request that is fine. For a decision per packet, per frame, per tick or per sample it is not an option at all.</p>
+<p>Reflex compiles each question into its own circuit on a field-programmable gate array. The state streams through a tokeniser and a quantised encoder at one token per clock; every question's head reads the same context vector and all of them finish in the same cycle. There is no scheduler, no cache, no garbage collector and no neighbour's traffic. The answer carries the cycle count it took, and that count is identical next time.</p>
+
+<p class="note"><b>What "cycle" means here</b>A <strong>cycle</strong> is one tick of the FPGA's hardware clock. At 250 MHz a tick lasts 4 nanoseconds, so 250 cycles is one microsecond. On every tick, every part of the Reflex circuit does useful work at the same time: the tokeniser reads a byte, the encoder takes a token, and the question heads read their inputs. A CPU running a model works differently. It spends much of its time on things that are not your answer: waiting for the operating system to schedule it, missing cache, copying buffers, and waiting on the network. When these docs give a decision time in cycles, the count covers the decision and nothing else.</p>
+
+<p class="note clock"><b>Read this first</b>Reflex is an open design, not a shipped product. Latency figures in these docs are <em>targets</em> derived from the architecture, not measurements. The <a href="#roadmap">Project status</a> page says exactly what exists, the <a href="#milestones">Milestones</a> track is how targets become measurements, and the <a href="#toolkit">M0 emulator</a> runs on a laptop today with the whole request shape and a modelled cycle count. If you are here to build something fast for your own problem, start with <a href="#designing">Designing for the fabric</a> and the <a href="#blueprints">Blueprints</a>.</p>
+
+<pre class="mermaid">
+flowchart LR
+    state["your data<br/>(the state)<br/>text, JSON, or a byte stream"]
+    q["your questions<br/>(several types)"]
+    join@{ shape: f-circ }
+    subgraph fabric["Reflex fabric: one bitstream"]
+      direction LR
+      tok["tokenise<br/>(LSRAM)"] --> enc["encoder<br/>(math-block<br/>systolic array)"] --> heads["one head circuit<br/>per question slot"]
+    end
+    state --- join
+    q --- join
+    join -- "one request<br/>or AXI4-Stream" --> fabric
+    fabric -- "one response<br/>+ cycle count" --> ans["typed answers<br/>+ probabilities<br/>+ confidence<br/>+ timing"]
+    ans --> code["<b>your code</b><br/>branch, sort, route,<br/>or a GPIO pin"]
+</pre>
+
+<h2>Question types</h2>
+<div class="tw"><table>
+<tr><th>Question type</th><th>Goal</th><th>Returns</th><th>Answers</th></tr>
+<tr><td><a href="#primitives">Choice</a></td><td>Choose an option from a list</td><td><code>choice</code>, <code>probabilities</code>, <code>confidence</code></td><td>once per state</td></tr>
+<tr><td><a href="#primitives">Score</a></td><td>Score the state on a rubric</td><td><code>score</code>, <code>probabilities</code>, <code>confidence</code></td><td>once per state</td></tr>
+<tr><td><a href="#primitives">Noul</a></td><td>Is this statement true?</td><td><code>noul</code> (0–1)</td><td>once per state</td></tr>
+<tr><td><a href="#primitives">Box</a></td><td>Where is this in the image?</td><td><code>box</code>, <code>confidence</code></td><td>once per state</td></tr>
+<tr><td><a href="#primitives">Pulse</a> <span class="pill">new</span></td><td>A Noul evaluated on every window of a stream</td><td><code>pulse[]</code>, one probability per window</td><td>every window</td></tr>
+<tr><td><a href="#primitives">Gate</a> <span class="pill hw">new · hardware</span></td><td>Drive a physical signal when a Noul crosses a threshold</td><td><code>gate</code> (0/1), <code>asserted_at_cycle</code></td><td>as a signal, the cycle it crosses</td></tr>
+</table></div>
+<p>Any mix of question types goes in one request. Each question has its own slot in the fabric, so adding a question adds a circuit, not time: 1 question and 256 questions finish in the same cycle.</p>
+
+<h2>Atomic questions, composed in code</h2>
+<p>One rule governs everything on the fabric. Each question should ask one well-scoped thing that a knowledgeable person could judge in a few seconds. If a judgement needs several factors, ask each factor as its own question and combine them in your code. On Reflex that combination is free: every factor is a slot, all slots finish together, and your weighting lives in a coefficient you can change without resynthesising anything.</p>
+
+<h2>Where to go next</h2>
+<div class="next">
+  <a href="#quickstart">Quick start<span>Your first request, with or without a board.</span></a>
+  <a href="#fabric">How the fabric works<span>The FPGA principles Reflex is built on, and the hardware underneath.</span></a>
+  <a href="#questions">State &amp; questions<span>Every question type, what it returns, and Pulse and Gate.</span></a>
+  <a href="#examples-hardware">Examples<span>Software recipes, then AXI4-Stream, PolarFire SoC and a RISC-V driver.</span></a>
+</div>
+
+<h2 class="part" id="system-zero">System Zero</h2>
+<p>A System Zero model evaluates a state and returns typed answers with probabilities. It never generates text. Beyond that contract it makes two guarantees that only a fixed circuit can make:</p>
+<ul>
+<li><strong>Bounded latency.</strong> Every answer carries the cycle count that produced it, and that count does not change between requests to the same bitstream.</li>
+<li><strong>Hardware-addressable answers.</strong> An answer can be read from a register, pushed on an AXI4-Stream, or asserted on a pin, as well as returned over HTTP.</li>
+</ul>
+<p>Reflex understands natural-language input and never writes replies, code, or explanations. You define the answer space through <a href="#primitives">question types</a>, and the fabric is laid out to answer exactly those.</p>
+<div class="tw"><table>
+<tr><th>Primitive</th><th>Question</th><th>Example answer space</th><th>Example output</th></tr>
+<tr><td>Choice</td><td>Which team should handle this ticket?</td><td><code>billing</code>, <code>technical</code>, <code>account</code></td><td><code>choice: "billing"</code></td></tr>
+<tr><td>Score</td><td>How frustrated is this customer?</td><td>0 = calm, 1 = frustrated, 2 = very frustrated</td><td><code>score: 1.4</code></td></tr>
+<tr><td>Noul</td><td>Does this message request a refund?</td><td>true / false</td><td><code>noul: 0.95</code></td></tr>
+<tr><td>Pulse</td><td>Is this audio frame speech?</td><td>true / false, per 20 ms window</td><td><code>pulse: [0.02, 0.91, 0.97, …]</code></td></tr>
+<tr><td>Gate</td><td>Should the relay open?</td><td>asserted / not asserted</td><td><code>gate: 1, asserted_at_cycle: 188</code></td></tr>
+</table></div>
+
+<h3>Why "zero"</h3>
+<p>Kahneman's System 1 is fast, intuitive judgement, and System 2 is slow deliberation. System Zero is the layer beneath both: the reflex that fires before judgement is conscious. The name is a reminder of what these models are for. They are not for reasoning. They are for the decisions you need in the time it takes a packet to cross a switch.</p>
+
+<h3>Fast judgements inside a larger workflow</h3>
+<p>The workflow is the same on a laptop and on a board. Build a state, ask independent atomic questions together, combine them with deterministic checks in code, and route for action or review. Reflex adds a fourth step for hardware builders: wire the answer. A Gate question can drive an interrupt, a valid strobe or a GPIO directly, without the processor in the loop.</p>
+<p>Call a System Zero model through a <a href="#sdks">client SDK</a>, <code>POST /v1/systemzero</code> in the <a href="#api">HTTP API</a>, or the on-board register file described in <a href="#examples-hardware">hardware examples</a>. The <code>model</code> field selects the bitstream.</p>
+</article>
+
+<article id="quickstart">
+<p class="eyebrow">Get started</p>
+
+<h1>Quick start</h1>
+
+<h2>The minimum you should know</h2>
+<p>A call to Reflex takes a <a href="#questions">state</a> and a set of <a href="#primitives">questions</a> and returns one answer per question plus a <code>timing</code> block. The hosted endpoint, the SDKs and the on-board AXI interface all accept the same request shape, so you can prototype against the cloud and move to a board without changing a question.</p>
+
+<pre class="mermaid">
+flowchart LR
+    doc["state<br/><i>text, object, or bytes</i>"]
+    quest["questions<br/><i>what you want to know</i>"]
+    subgraph call["one call"]
+      direction LR
+      doc --> api["ReflexClient<br/>.system_zero()"]
+      quest --> api
+    end
+    api --> ans["answers<br/><i>one per question</i><br/>+ timing"]
+</pre>
+
+<h2>Code it: your first request</h2>
+<p>Get an API key from the Reflex console and export it. The example sends a support ticket and asks three questions in one request: which team should take it, how frustrated the customer sounds, and whether it is urgent.</p>
+<pre><code>mkdir reflex-quickstart &amp;&amp; cd reflex-quickstart
+export REFLEX_API_KEY="your-api-key"</code></pre>
+
+<div class="tabs">
+<div class="bar"><button class="on">Python</button><button>TypeScript</button><button>curl</button><button>C (on-board)</button></div>
+<pre class="on"><code><span class="c"># pip install reflex-sdk   (Python 3.10+)</span>
+<span class="k">from</span> reflex_sdk <span class="k">import</span> Choice, Noul, Score, ReflexClient
+
+ticket = <span class="s">"Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed."</span>
+
+<span class="k">with</span> ReflexClient(model=<span class="s">"reflex-latest"</span>) <span class="k">as</span> client:  <span class="c"># reads REFLEX_API_KEY</span>
+    r = client.system_zero(
+        state=ticket,
+        questions={
+            <span class="s">"department"</span>: Choice(
+                instructions=<span class="s">"Which team should handle this"</span>,
+                criteria={
+                    <span class="s">"billing"</span>: <span class="s">"Payment or subscription issues"</span>,
+                    <span class="s">"technical"</span>: <span class="s">"Bugs or integration problems"</span>,
+                    <span class="s">"sales"</span>: <span class="s">"Pricing or account questions"</span>,
+                },
+            ),
+            <span class="s">"frustration"</span>: Score(
+                instructions=<span class="s">"How frustrated the customer appears"</span>,
+                criteria=[<span class="s">"Calm, just stating facts"</span>, <span class="s">"Frustrated but civil"</span>, <span class="s">"Very angry, strong language"</span>],
+            ),
+            <span class="s">"is_urgent"</span>: Noul(instructions=<span class="s">"The message conveys urgency or time-sensitivity"</span>),
+        },
+    )
+
+<span class="k">print</span>(r.choices[<span class="s">"department"</span>].choice)      <span class="c"># technical</span>
+<span class="k">print</span>(r.scores[<span class="s">"frustration"</span>].score)       <span class="c"># 0.67</span>
+<span class="k">print</span>(r.nouls[<span class="s">"is_urgent"</span>].noul)           <span class="c"># 0.99</span>
+<span class="k">print</span>(r.timing.cycles, r.timing.latency_ns) <span class="c"># 212  848</span></code></pre>
+<pre><code><span class="c">// npm install @reflex/sdk   (Node 20+, ES module)</span>
+<span class="k">import</span> { choice, noul, score, ReflexClient } <span class="k">from</span> <span class="s">"@reflex/sdk"</span>;
+
+<span class="k">const</span> ticket = <span class="s">"Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed."</span>;
+
+<span class="k">const</span> client = <span class="k">new</span> ReflexClient({ defaultModel: <span class="s">"reflex-latest"</span> }); <span class="c">// reads REFLEX_API_KEY</span>
+<span class="k">const</span> r = <span class="k">await</span> client.systemZero({
+  state: ticket,
+  questions: {
+    department: choice(<span class="s">"Which team should handle this"</span>, {
+      billing: <span class="s">"Payment or subscription issues"</span>,
+      technical: <span class="s">"Bugs or integration problems"</span>,
+      sales: <span class="s">"Pricing or account questions"</span>,
+    }),
+    frustration: score(<span class="s">"How frustrated the customer appears"</span>, [
+      <span class="s">"Calm, just stating facts"</span>, <span class="s">"Frustrated but civil"</span>, <span class="s">"Very angry, strong language"</span>,
+    ]),
+    is_urgent: noul(<span class="s">"The message conveys urgency or time-sensitivity"</span>),
+  },
+});
+
+console.log(r.answers.department.choice);  <span class="c">// "technical"  (typed: "billing" | "technical" | "sales")</span>
+console.log(r.answers.frustration.score);  <span class="c">// 0.67</span>
+console.log(r.answers.is_urgent.noul);     <span class="c">// 0.99</span>
+console.log(r.timing);                     <span class="c">// { cycles: 212, clock_mhz: 250, latency_ns: 848, deterministic: true }</span></code></pre>
+<pre><code>curl --fail-with-body -s https://api.reflex.dev/v1/systemzero \
+  -H <span class="s">"Authorization: Bearer $REFLEX_API_KEY"</span> \
+  -H <span class="s">"Content-Type: application/json"</span> \
+  --data-binary @- &lt;&lt;'JSON'
+{
+  "model": "reflex-latest",
+  "state": "Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed.",
+  "questions": {
+    "department":  { "type": "choice", "instructions": "Which team should handle this",
+                     "criteria": { "billing": "Payment or subscription issues",
+                                   "technical": "Bugs or integration problems",
+                                   "sales": "Pricing or account questions" } },
+    "frustration": { "type": "score",  "instructions": "How frustrated the customer appears",
+                     "criteria": ["Calm, just stating facts", "Frustrated but civil", "Very angry, strong language"] },
+    "is_urgent":   { "type": "noul",   "instructions": "The message conveys urgency or time-sensitivity" }
+  }
+}
+JSON</code></pre>
+<pre><code><span class="c">/* On a PolarFire SoC: the MSS (RISC-V) talks to the fabric over AXI4-Lite + AXI4-Stream.
+   libreflex is header-only; questions are compiled into the bitstream by `reflex synth`. */</span>
+<span class="k">#include</span> <span class="s">"reflex.h"</span>
+
+<span class="k">int</span> main(<span class="k">void</span>) {
+    reflex_core_t core;
+    rfx_open(&amp;core, RFX_CORE0_BASE);                 <span class="c">/* maps the register file        */</span>
+    rfx_slots_t s = rfx_slots_from_toml(&amp;core);       <span class="c">/* slot ids baked by reflex synth   */</span>
+
+    <span class="k">const char</span> *ticket = <span class="s">"Our API integration started returning 500 errors ..."</span>;
+    rfx_push_state(&amp;core, ticket, strlen(ticket));    <span class="c">/* AXI4-Stream, one beat/cycle   */</span>
+    rfx_wait_done(&amp;core);                             <span class="c">/* or take the IRQ               */</span>
+
+    rfx_choice_t dept = rfx_read_choice(&amp;core, s.department);
+    rfx_score_t  frus = rfx_read_score (&amp;core, s.frustration);
+    rfx_q15_t    urg  = rfx_read_noul  (&amp;core, s.is_urgent);
+    printf(<span class="s">"%s %.2f %.2f in %u cycles\n"</span>, dept.label, frus.value, rfx_q15_to_f(urg),
+           rfx_read_cycles(&amp;core));                   <span class="c">/* technical 0.67 0.99 in 212 cycles */</span>
+}</code></pre>
+</div>
+
+<p class="note ok"><b>What came back</b><code>choice</code> is the team label, <code>score</code> is the position on the three-level rubric (0–2), <code>noul</code> is the probability of urgency (0–1), and <code>timing.cycles</code> is how many fabric clocks the whole request took. Send the request again and <code>cycles</code> will be identical.</p>
+
+<h2>Flash it: your own board</h2>
+<p>The hosted API runs the same bitstream on a pool of PolarFire SoC and Alveo cards. When you want the answer on a wire instead of a socket, compile your questions into the fabric.</p>
+<pre><code><span class="c"># one-time: install the toolchain (wraps Libero SoC or Vitis; see Fabric targets)</span>
+pip install reflex-sdk[fabric]
+
+<span class="c"># describe your questions once, in reflex.toml (see Configuration)</span>
+reflex init --target mpfs250t
+
+<span class="c"># synthesise: questions -> slot circuits -> place &amp; route -> bitstream</span>
+reflex synth            <span class="c"># prints slot map, resource use and the closed clock</span>
+reflex flash            <span class="c"># programs the fabric over JTAG or the MSS system controller</span>
+reflex bench --n 100000 <span class="c"># p50 / p99 / p100 cycles, which will be the same number</span></code></pre>
+
+<h2>Try it: the Playground</h2>
+<p>The Playground runs Reflex in the browser with a live cycle counter. Paste any state, add questions, and watch the cycle count stay flat as you add more. It is the fastest way to feel the difference between a model that is scheduled and a model that is wired.</p>
+<div class="next">
+  <a href="#primitives">Primitives<span>Define questions, choose a type, ask several at once.</span></a>
+  <a href="#configuration">Configuration<span>reflex.toml, quantisation, slot budgets.</span></a>
+  <a href="#sdks">Python SDK<span>Sync and async clients, retries, typed answers.</span></a>
+</div>
+</article>
+
+<article id="fabric">
+<p class="eyebrow">Get started</p>
+
+<h1>Why the fabric is faster</h1>
+<p class="lede">A decision model is fast when it refuses to generate text. Reflex is faster because it refuses to be scheduled.</p>
+
+<h3>1. Spatial computation</h3>
+<p>A CPU or GPU time-slices a fixed set of arithmetic units across a stream of instructions. An FPGA lays out a dedicated circuit for every operation and runs them all at once. Reflex turns each question into its own head circuit, so 256 questions are 256 circuits, not 256 passes.</p>
+<h3>2. Initiation interval of one</h3>
+<p>A pipelined circuit accepts a new input every <em>II</em> cycles. For a pipeline with latency <em>L</em> processing <em>N</em> inputs the total cycle count is <code>L + II·N</code>. Reflex's encoder and heads close at II = 1, so throughput equals the clock rate no matter how deep the pipeline is, and the first answer is still only <em>L</em> cycles away.</p>
+<h3>3. Streaming dataflow</h3>
+<p>The tokeniser, encoder and heads are separate processing elements joined by FIFOs. Each runs as soon as its input arrives; no stage waits for a whole request to be buffered. Intermediate activations never leave the chip.</p>
+<h3>4. On-chip memory locality</h3>
+<p>The state buffer, token embeddings and every head's criteria live in LSRAM and µSRAM blocks spread through the fabric. Every operand is one cycle away. External DDR is used only to load a bitstream.</p>
+<h3>5. Fixed-point, mixed precision</h3>
+<p>Weights are trained quantisation-aware and run as INT8 and INT4 dot products in the 18×18 math blocks' DOTP mode. Lower precision is what lets a whole encoder fit on a mid-range part: it halves math-block and memory use per step down in width, and the training loop absorbs most of the accuracy cost. Quantisation and pruning before synthesis, then an equivalence test of the hardware model against the software model, is the standard deployment path for inline inference on FPGAs and it is Reflex's too.</p>
+<h3>6. Deterministic latency</h3>
+<p>No OS, no scheduler, no cache misses, no garbage collection. A fixed circuit at a fixed clock takes a fixed number of cycles. That is why FPGAs sit in the data path of packet filters and market-data handlers: the decision is made as the data passes through, with no software loop, kernel crossing or model server in between. Reflex reports its cycle count on every answer so you can build the same guarantees.</p>
+<h3>7. Cross-layer pipelining</h3>
+<p>Encoder layers run concurrently on successive tokens instead of one layer at a time, so the latency of the stack is its depth, not the sum of its layers. Reflex's encoder is built this way, and its heads are built the same way: every slot reads the same broadcast context vector and finishes together.</p>
+<h3>8. Attention on the fabric: keep the DSPs busy</h3>
+<p>Published attention accelerators converge on the same lessons. Map every multiply-accumulate to a hard DSP or math block rather than to LUT logic; split operands across many small memories so each block has a partner every cycle; tile weight matrices to fit on-chip memory. Softmax is the awkward part, because its division is LUT-bound and sets the real limit on how many heads run in parallel. Reflex's heads use a shared fixed-point exponent table and a reciprocal step so the softmax cost is paid once per slot rather than per option.</p>
+<h3>9. Reconfigurability with decoupling</h3>
+<p>A new bitstream re-targets the same silicon. Partial reconfiguration rewrites one floorplanned partition while the static region keeps running. Done properly it needs decouplers on every AXI-Stream port of the partition, so the module cannot emit garbage or accept input while it is being rewritten, and a local reset, because the global reset does not fire after a partial load. Reflex's slot partitions are built with both, which is what lets you change a question in production without a cold start.</p>
+<h3>10. Timing closure as a design loop</h3>
+<p><code>reflex synth</code> runs synthesis, place-and-route and static timing analysis, then retimes registers until the design closes at the requested clock. The clock it closed at is what the response reports as <code>clock_mhz</code>.</p>
+
+
+<h2 class="part" id="fpga-primer">FPGA primer</h2>
+
+<h3>What an FPGA is</h3>
+<p>An FPGA is a sea of prefabricated logic resources plus a programmable routing network. Loading a <strong>bitstream</strong> sets every routing switch and every truth-table bit, turning the generic fabric into one specific circuit. Change the bitstream and the same chip becomes a different circuit. Nothing is interpreted at run time; the circuit simply exists.</p>
+
+<h3>Inside the fabric</h3>
+<pre class="mermaid">
+flowchart TB
+    subgraph LE["Logic element (LE)"]
+      LUT["4-input LUT<br/>16-bit truth table"] --> DFF["D flip-flop"]
+    end
+    subgraph LC["Logic cluster (12 LEs)"]
+      LE
+      X["local crossbar<br/>+ carry chain"]
+    end
+    LC <-->|"connection box"| CH["routing channel<br/>(wires)"]
+    CH <-->|"switch box"| CH2["routing channel"]
+    CH2 <--> HB["hard blocks in rows:<br/>LSRAM 20 Kb · µSRAM 768 b · 18×18 math"]
+</pre>
+<ul>
+<li><strong>Logic element (LE).</strong> A small look-up table plus a D flip-flop. PolarFire uses a 4-input LUT and DFF per LE; AMD and Intel parts commonly use 6-input LUTs. A K-input LUT is a 2<sup>K</sup>-bit memory that implements any Boolean function of K variables.</li>
+<li><strong>Logic cluster / CLB.</strong> A group of LEs (12 per cluster on PolarFire) joined by a local crossbar, with dedicated carry chains for fast adders and counters.</li>
+<li><strong>Routing fabric.</strong> Horizontal and vertical wire channels joined by switch boxes and connection boxes. Routing takes most of the die area and is usually what limits clock frequency. Modern fabrics use uni-directional wires and a mix of short local tracks and long-haul tracks, so a design that keeps its connections local closes at a higher clock.</li>
+<li><strong>Math blocks.</strong> Hard 18×18 multiply-accumulate units. PolarFire's run in Normal, DOTP (two 9×9 dot products summed) and SIMD modes, cascade into wide multipliers and systolic FIR chains, and carry pipeline registers on every port.</li>
+<li><strong>Embedded memory.</strong> LSRAM (20 Kb, dual-port) and µSRAM (768-bit, 64×12, three-port) blocks spread in rows through the fabric; µPROM for constants; sNVM for keys and secure data.</li>
+<li><strong>Interface logic.</strong> Each LSRAM and math block has 36 interface LEs, each µSRAM 12. Unused interface logic is ordinary user logic.</li>
+<li><strong>I/O.</strong> GPIO and high-speed banks, 12.7 Gbps SerDes transceivers, PCIe Gen2, DDR controllers. PolarFire SoC adds a five-core 64-bit RISC-V subsystem (SiFive U54-MC) on the same die, which is what Reflex's on-board driver runs on.</li>
+</ul>
+
+<h3>PolarFire fabric resources</h3>
+<div class="tw"><table>
+<tr><th>Resource</th><th class="num">MPF100</th><th class="num">MPF200</th><th class="num">MPF300</th><th class="num">MPF500</th><th class="num">MPFS250 (SoC)</th><th class="num">MPFS460 (SoC)</th></tr>
+<tr><td>Logic elements (4LUT + DFF)</td><td class="num">71,736</td><td class="num">127,896</td><td class="num">198,744</td><td class="num">319,992</td><td class="num">254,000</td><td class="num">461,000</td></tr>
+<tr><td>LSRAM blocks (20 Kb)</td><td class="num">352</td><td class="num">616</td><td class="num">952</td><td class="num">1,520</td><td class="num">812</td><td class="num">1,460</td></tr>
+<tr><td>µSRAM blocks (768 b)</td><td class="num">1,008</td><td class="num">1,764</td><td class="num">2,772</td><td class="num">4,440</td><td class="num">2,352</td><td class="num">4,260</td></tr>
+<tr><td>Total RAM (Mb)</td><td class="num">7.6</td><td class="num">13.3</td><td class="num">20.6</td><td class="num">32.9</td><td class="num">17.6</td><td class="num">31.6</td></tr>
+<tr><td>Math blocks (18×18 MACC)</td><td class="num">336</td><td class="num">588</td><td class="num">924</td><td class="num">1,480</td><td class="num">784</td><td class="num">1,420</td></tr>
+</table></div>
+
+<h3>The design flow</h3>
+<pre class="mermaid">
+flowchart LR
+    A["HDL or HLS<br/>(Verilog, VHDL, C++)"] --> B["synthesis<br/>netlist of LUTs, FFs, DSPs"] --> C["place &amp; route"] --> D["static timing<br/>analysis"] --> E["bitstream"]
+    D -. "retime, add<br/>pipeline registers" .-> B
+</pre>
+<ul>
+<li><strong>HDL</strong> (Verilog/VHDL) describes the circuit directly. <strong>HLS</strong> compiles C/C++ into RTL, with pragmas such as <code>PIPELINE II=1</code>, <code>DATAFLOW</code>, <code>UNROLL</code> and <code>ARRAY_PARTITION</code> steering the result.</li>
+<li><strong>Standard interfaces.</strong> AXI4-Stream (valid/ready handshake for data), AXI4-Lite (register maps), AXI4 memory-mapped (DMA). Reflex cores expose all three.</li>
+<li><strong>Timing closure.</strong> The loop of retiming and re-placing until every path meets the clock. Designs on current mid-range parts commonly close between 200 and 500 MHz.</li>
+<li><strong>Clock domains.</strong> Signals crossing between clocks need synchronisers; Microchip publishes metastability characterisation for its parts. Reflex keeps the whole decision path in one clock domain and crosses only at the AXI boundary.</li>
+<li><strong>Toolchains.</strong> Libero SoC and SmartDesign for Microchip; Vivado and Vitis for AMD. <code>reflex synth</code> drives whichever one your target needs.</li>
+</ul>
+
+<h3>Partial reconfiguration</h3>
+<p>A design is split into a <strong>static region</strong> and one or more <strong>reconfigurable partitions</strong>, each with its own floorplan area. Synthesis produces one full bitstream plus a partial bitstream per partition module. Loading a partial bitstream rewrites that partition while the static region keeps running. Three rules make it safe:</p>
+<ul>
+<li>Put a <strong>decoupler</strong> on every AXI-Stream port of the partition. During the rewrite the partition can emit nonsense and accept data it should not; the decoupler isolates it.</li>
+<li>Give the partition a <strong>local reset</strong>. The device-wide reset fires on a full configuration but not after a partial one.</li>
+<li>Register the partition's inputs and outputs, and make the static region work for every combination of modules, including an empty partition.</li>
+</ul>
+<p>Reflex's slot partitions follow all three, which is what makes a live question swap possible.</p>
+
+<h3>Inline inference: how models get into the data path</h3>
+<p>The pattern that packet filters and SmartNICs use is the template for Reflex. A model is trained in a normal framework, then quantised and pruned until it fits the fabric budget, then converted to RTL by a tool (hls4ml, a vendor AI suite, or hand-written HDL), then checked for equivalence against the software model on a held-out set, then placed <em>inline</em> with the existing hardware pipeline, so the decision is made as the data passes through. There is no software loop, no kernel crossing and no model server in the path. Every page in the <a href="#milestones">Milestones</a> track is one step of that workflow.</p>
+
+<h3>Attention on an FPGA</h3>
+<p>Transformer attention is matrix multiplication followed by softmax followed by another matrix multiplication. The multiplications map well: tile the weight matrices to on-chip memory, assign each multiply-accumulate to a hard DSP or math block, and spread operands across many small RAMs so every block has an operand every cycle. The softmax does not map well: its exponent and division are implemented in LUTs, and in practice the division is what bounds how many heads run in parallel. Sequence length and embedding width both cut throughput, which is why Reflex's encoder is narrow and its state buffer is a hard limit rather than a soft one. Head count, width and sequence length can be runtime parameters, read from registers, without resynthesis; tile size cannot.</p>
+</article>
+
+<article id="questions">
+<p class="eyebrow">Concepts</p>
+
+<h1>State</h1>
+<p>State is the content every question in a request refers to. Reflex accepts three shapes: a string, a JSON object, or an array of text values. It adds one more: raw bytes on a stream, for Pulse questions.</p>
+<pre><code>{
+  "state": {
+    "subject": "Duplicate charge",
+    "message": "I was charged twice for my subscription this month. Please refund the extra charge.",
+    "account": { "plan": "pro", "tenure_months": 14, "open_tickets": 0 }
+  }
+}</code></pre>
+
+<h2>How state becomes cycles</h2>
+<p>The state is tokenised once into an LSRAM-backed buffer and streamed through the encoder at one token per cycle. The encoder's latency is fixed; the only variable term is the token count. In the cycle model (constants are architecture estimates until <a href="#milestones">M2</a> replaces them with measurements):</p>
+<pre class="timeline">cycles = 64 (tokenise + load)  +  tokens × 1 (encoder, II=1)  +  96 (encoder drain)  +  28 (heads, all slots in parallel)
+
+  256-token state  →  444 cycles  →  1.78 µs at 250 MHz
+  512-token state  →  700 cycles  →  2.80 µs
+ 2048-token state  → 2236 cycles  →  8.94 µs</pre>
+<p>Questions do not appear in that formula. A request with 1 question and a request with 256 questions against the same state take the same number of cycles, because the heads are separate circuits that read the same encoder output.</p>
+
+<h2>Context limits</h2>
+<div class="tw"><table>
+<tr><th>Limit</th><th>reflex-1.0 hosted</th><th>reflex-1.0 on MPFS250T</th><th>Notes</th></tr>
+<tr><td>Per-request context</td><td class="num">8,192 tokens</td><td class="num">4,096 tokens</td><td>State buffer size; set in <code>[fabric].state_tokens</code></td></tr>
+<tr><td>Per-question context</td><td class="num">8,192 tokens</td><td class="num">4,096 tokens</td><td>Same buffer; questions do not consume it</td></tr>
+<tr><td>Question slots</td><td class="num">256</td><td class="num">64–256</td><td>Resource-bound; <code>reflex synth</code> reports the fit</td></tr>
+<tr><td>Criteria per Choice</td><td class="num">255</td><td class="num">255</td><td></td></tr>
+<tr><td>Levels per Score</td><td class="num">10</td><td class="num">10</td><td></td></tr>
+</table></div>
+<p class="note clock"><b>Long context</b>Reflex has no long-context header. Its state buffer is physical memory. If your state is larger than the buffer, chunk it in code and ask the same questions of each chunk; the <a href="#patterns">windowed-state pattern</a> shows how, and because chunks are independent they pipeline back to back at II = 1.</p>
+
+<h2>Structuring state well</h2>
+<ul>
+<li>Put the content the questions are about first. The encoder sees tokens in order, and early tokens are in the buffer longest.</li>
+<li>Name fields. A JSON object with <code>subject</code> and <code>message</code> keys gives the heads more to anchor on than a bare concatenation.</li>
+<li>Keep reference material (policy, rubric) in the question's <code>criteria</code>, not in the state, unless it changes per request. Criteria are compiled into the slot's µSRAM at synthesis time and cost zero tokens at run time.</li>
+</ul>
+
+<h2 class="part" id="primitives">Primitives (Questions)</h2>
+
+<h3>Choice</h3>
+<p>Select one option from a defined set. The answer includes the selected option, a probability for each option, and confidence. Criteria accept a string, object, or array per option.</p>
+<pre><code>"tone": {
+  "type": "choice",
+  "instructions": "What is the tone of this message?",
+  "criteria": {
+    "angry":   "An upset or hostile message",
+    "calm":    "A neutral or polite message",
+    "excited": "An enthusiastic or eager message"
+  }
+}
+<span class="c">// answer</span>
+"tone": { "type": "choice", "choice": "calm", "confidence": 0.7,
+          "probabilities": { "angry": 0.15, "calm": 0.80, "excited": 0.05 } }</code></pre>
+
+<h3>Score</h3>
+<p>Rate the state against ordered, descriptive levels. The answer is the expected score (probability-weighted average of level indices), a probability per level, the legend, and confidence.</p>
+<pre><code>"urgency": { "type": "score", "instructions": "How urgent is this message?",
+             "criteria": ["Can wait", "Needs attention this week", "Needs attention today"] }
+<span class="c">// answer</span>
+"urgency": { "type": "score", "score": 1.7, "confidence": 0.55,
+             "legend": { "0": "Can wait", "1": "Needs attention this week", "2": "Needs attention today" },
+             "probabilities": { "0": 0.1, "1": 0.1, "2": 0.8 } }</code></pre>
+
+<h3>Noul</h3>
+<p>Evaluate a yes/no question or statement and return the probability that it is true. Optional <code>criteria</code> with <code>true</code> and <code>false</code> descriptions sharpen the boundary.</p>
+<pre><code>"billing": { "type": "noul", "instructions": "Is this message about billing?" }
+<span class="c">// answer</span>
+"billing": { "type": "noul", "noul": 0.98 }</code></pre>
+
+<h3>Box</h3>
+<p>Locate what the instructions describe in an image asset. Returns four normalised edges and confidence. Box questions need an image-capable bitstream (<code>reflex-vision</code>) and the <code>Reflex-Danger-Zone-Images: true</code> header, so image handling is an explicit opt-in.</p>
+
+<h3>Pulse <span class="pill">new</span></h3>
+<p>A Pulse is a Noul evaluated on every window of a streaming state. Where a Noul answers once per request, a Pulse answers once per window, and the windows are pipelined back to back. Use it for audio, sensor, log and packet streams where the question is the same but the state never stops.</p>
+<pre><code>"speech": {
+  "type": "pulse",
+  "instructions": "This window contains human speech",
+  "window": { "bytes": 640, "stride": 320 }   <span class="c">// 20 ms of 16 kHz PCM, 50% overlap</span>
+}
+<span class="c">// answer (request mode: windows resolved from the state bytes)</span>
+"speech": { "type": "pulse", "pulse": [0.02, 0.05, 0.91, 0.97, 0.96, 0.40],
+            "window": { "bytes": 640, "stride": 320 }, "windows": 6 }
+<span class="c">// in stream mode the same answer arrives one value per window on the output stream</span></code></pre>
+<p>In hosted <strong>request mode</strong> you send the whole byte array as the state and get the whole array of probabilities back. In <strong><a href="#api-stream">stream mode</a></strong>, and on a board, each window's probability leaves the fabric a fixed number of cycles after that window's last byte arrives.</p>
+
+<h3>Gate <span class="pill hw">new · hardware</span></h3>
+<p>A Gate wraps a Noul with a threshold and a physical output. When the probability crosses the threshold the fabric asserts a signal: an interrupt line, an AXI4-Stream valid, or a GPIO you name in <a href="#configuration">configuration</a>. The processor does not have to read anything for the signal to fire.</p>
+<pre><code>"stop": {
+  "type": "gate",
+  "instructions": "The operator said stop, halt, or emergency",
+  "threshold": 0.85,
+  "hysteresis": 0.10,          <span class="c">// de-assert below 0.75</span>
+  "output": "gpio:PB4"         <span class="c">// or "irq:3", "axis:gate_out"</span>
+}
+<span class="c">// answer</span>
+"stop": { "type": "gate", "gate": 1, "noul": 0.93, "asserted_at_cycle": 188 }</code></pre>
+<p>On the hosted API a Gate behaves like a Noul plus a boolean; <code>asserted_at_cycle</code> is still reported so you can tune thresholds before you flash.</p>
+
+<h3>Choosing a question type</h3>
+<div class="tw"><table>
+<tr><th>You want</th><th>Use</th><th>Why</th></tr>
+<tr><td>One label from a fixed list</td><td>Choice</td><td>Probabilities across options, confidence for gating</td></tr>
+<tr><td>A graded judgement</td><td>Score</td><td>Ordered levels; the expected score is directly comparable</td></tr>
+<tr><td>A single fact check</td><td>Noul</td><td>Cheapest slot; the probability is the answer</td></tr>
+<tr><td>The same fact check on a stream</td><td>Pulse</td><td>II = 1 per window, no per-request overhead</td></tr>
+<tr><td>A physical consequence</td><td>Gate</td><td>No software in the loop between answer and action</td></tr>
+</table></div>
+
+<h3>Asking several at once</h3>
+<p>Put any number of questions in one request, up to the slot count. They evaluate in parallel and in isolation against the same state. Adding a question does not add cycles and does not change the other answers. Separate silicon per question is what rules out context rot between questions.</p>
+</article>
+
+<article id="confidence">
+<p class="eyebrow">Concepts</p>
+
+<h1>Confidence &amp; timing</h1>
+<p class="lede">Reflex reports certainty as a calibrated distribution on every answer, and adds a second axis no scheduled model can: how long the answer took, to the cycle.</p>
+
+<h2>Confidence</h2>
+<p>Every Choice and Score answer carries <code>probabilities</code> and a derived <code>confidence</code> from 0 to 1. They are computed in fabric by a small fixed-point block in each head:</p>
+<ul>
+<li><strong>Noul:</strong> no separate confidence; <code>|2p − 1|</code> if you want one.</li>
+<li><strong>Choice:</strong> <code>(p_max − 1/n) / (1 − 1/n)</code>. Even split is 0, certainty is 1.</li>
+<li><strong>Score:</strong> <code>max(0, 1 − spread / MAD_unif)</code>, where spread is the probability-weighted distance in levels from the most likely level. Probability on a neighbouring level costs less than probability far away.</li>
+</ul>
+<p>Confidence is computed in Q1.15 fixed point, which resolves to 1/32768. The M1 pass condition includes checking the fixed-point head against the floating-point one, so the actual rounding error is a number you measure, not one these docs assert.</p>
+
+<h2>Three paths</h2>
+<p>Divide confidence into ranges and give each a behaviour. High: act. Medium: act with a check. Low: do not act; route to a person or a reasoning model. Where the boundaries sit depends on the stakes, and different actions in the same system should gate at different levels.</p>
+<pre><code>action = r.answers[<span class="s">"action"</span>]
+<span class="k">if</span> action.confidence &lt; 0.5:
+    route_to_human(msg)                      <span class="c"># model is unsure; don't guess</span>
+<span class="k">elif</span> action.choice == <span class="s">"check_balance"</span>:
+    show_balance(account_id)                 <span class="c"># low stakes, recoverable</span>
+<span class="k">elif</span> action.choice == <span class="s">"approve_transfer"</span>:
+    <span class="k">if</span> action.confidence &gt; 0.9: confirm_then_execute(account_id)
+    <span class="k">else</span>:                       ask_user_to_confirm(account_id)</code></pre>
+
+<h2>Timing</h2>
+<p>Every response includes a <code>timing</code> block. It is not an estimate. A hardware counter starts when the first byte of the state enters the FPGA and stops when the last question's answer is written. It counts clock cycles, and at 250 MHz each cycle is 4 nanoseconds.</p>
+<p>Every one of those cycles is spent computing your answer. None is spent waiting in a queue, crossing into an operating system, fetching from a cache, or making a network hop. That is why <code>cycles</code> times the clock period is the whole decision time on the board, and why the count does not change between runs.</p>
+<pre><code>"timing": {
+  "cycles": 212,
+  "clock_mhz": 250,
+  "latency_ns": 848,
+  "deterministic": true,
+  "bitstream": "reflex-1.0.0+mpfs250t.a91c"
+}</code></pre>
+<p><code>deterministic</code> is <code>true</code> when the request was served by a single fabric pass. It is <code>false</code> only when the hosted service had to chunk a state larger than the buffer, in which case <code>cycles</code> is the sum across chunks and may vary by one pipeline drain between runs.</p>
+
+<h2>Timing as a design input</h2>
+<p>Because the cycle count is fixed per bitstream, you can budget it like any other hardware latency. The <code>reflex synth</code> report prints the worst-case cycle count for your configured buffer size, and the SDKs expose it before any request is sent:</p>
+<pre><code>budget = client.bitstream_info().worst_case_cycles   <span class="c"># 2236 for a 2048-token buffer</span>
+<span class="k">assert</span> budget / 250e6 &lt; 10e-6                        <span class="c"># fits a 10 µs control-loop tick</span></code></pre>
+</article>
+
+<article id="architecture">
+<p class="eyebrow">Concepts</p>
+
+<h1>Architecture</h1>
+
+<pre class="mermaid">
+flowchart LR
+    IN["AXI4-Stream in<br/>(state bytes)"] --> T["① Tokeniser<br/>BPE trie in LSRAM<br/>1 byte/cycle"]
+    T --> E["② Encoder<br/>systolic array of<br/>math blocks, DOTP mode<br/>INT8/INT4, II=1"]
+    E --> H["③ Head slots ×N<br/>one per question<br/>criteria in µSRAM"]
+    H --> R["④ Result file<br/>AXI4-Lite registers<br/>+ AXI4-Stream out<br/>+ Gate pins"]
+    C["cycle counter"] -.-> R
+</pre>
+
+<h2>① Tokeniser</h2>
+<p>A byte-pair-encoding trie stored in LSRAM walks one input byte per cycle and emits token ids into the state buffer. The vocabulary is part of the bitstream. JSON states are flattened to a canonical key-value byte string by the SDK before they are sent, so the tokeniser never has to parse.</p>
+
+<h2>② Encoder</h2>
+<p>The encoder is a transformer-style stack mapped onto a systolic array of 18×18 math blocks. Weights are quantised per parameter at training time and packed into DOTP-mode operands, two INT8 products per block per cycle. Activations flow between layers through FIFOs, so layer <em>k+1</em> starts on token <em>t</em> while layer <em>k</em> is still on token <em>t+1</em> (cross-layer pipelining). The whole stack closes at II = 1, so a token enters every cycle and a context vector leaves every cycle after the fill latency.</p>
+<p>Reflex's weights are its own. They are trained with a calibrated-decision objective under a quantisation-aware schedule, against the slot architecture below. They are not a server model's weights run on an FPGA.</p>
+
+<h2>③ Head slots</h2>
+<p>Each question occupies a slot. A slot is a small classification head with its criteria embeddings in µSRAM and a fixed-point softmax, expected-value and confidence block. Slots read the shared context vectors in parallel through a broadcast bus and finish together, 28 cycles after the encoder drains.</p>
+<div class="tw"><table>
+<tr><th>Slot type</th><th class="num">LEs</th><th class="num">Math blocks</th><th class="num">µSRAM</th><th>Notes</th></tr>
+<tr><td>Noul</td><td class="num">~640</td><td class="num">2</td><td class="num">1</td><td>Cheapest slot</td></tr>
+<tr><td>Choice (≤ 16 options)</td><td class="num">~1,900</td><td class="num">6</td><td class="num">4</td><td>+ ~90 LEs per extra option</td></tr>
+<tr><td>Score (≤ 10 levels)</td><td class="num">~1,600</td><td class="num">4</td><td class="num">3</td><td>Expected-value and MAD blocks</td></tr>
+<tr><td>Pulse</td><td class="num">~900</td><td class="num">2</td><td class="num">2</td><td>Noul + window FIFO</td></tr>
+<tr><td>Gate</td><td class="num">~700</td><td class="num">2</td><td class="num">1</td><td>Noul + threshold/hysteresis + pin driver</td></tr>
+</table></div>
+<p>The per-slot figures are architecture estimates to be replaced by the <a href="#head-export">M1</a> synthesis report. The encoder's own footprint is unknown until <a href="#milestones">M2</a>; the design intent is that encoder plus 64 mixed slots fit an MPFS250T with room left for your own logic. <code>reflex synth</code> prints the real fit for your configuration.</p>
+
+<h2>④ Result file and outputs</h2>
+<p>Results land in a register file readable over AXI4-Lite and, optionally, are pushed as one packet per request on an AXI4-Stream output. Gate slots additionally drive the pin or interrupt named in configuration. A free-running cycle counter is latched at the first input beat and the last head write; the difference is what <code>timing.cycles</code> reports.</p>
+
+<h2>Hosted deployment</h2>
+<p>The hosted API fronts a pool of cards running the same bitstream. A request is routed to a card, DMA'd in, evaluated in one pass, and DMA'd out. Host-side overhead (network, PCIe, DMA) is reported separately in the <code>Reflex-Host-Latency-us</code> response header so you can see exactly how much of your round trip was the fabric.</p>
+
+<h2>Reconfiguration</h2>
+<p>Slot regions are floorplanned as partial-reconfiguration partitions. Changing a question's criteria rewrites µSRAM contents without reconfiguring anything. Changing a question's <em>type</em> reconfigures only that slot's partition while the rest of the core keeps serving. Changing the encoder or buffer size is a full bitstream and a cold start.</p>
+
+<h2 class="part" id="targets">Fabric targets</h2>
+<p class="sublede">Devices <code>reflex synth</code> is designed to build for. Slot counts, buffer depths and clocks are design targets scaled from each part's data-sheet resources; <a href="#milestones">M2</a> on each part replaces them with what closes timing.</p>
+<div class="tw"><table>
+<tr><th>Target id</th><th>Device</th><th>Toolchain</th><th class="num">Max slots</th><th class="num">Max state</th><th class="num">Ref. clock</th><th>Notes</th></tr>
+<tr><td><code>mpfs025t</code></td><td>PolarFire SoC MPFS025T</td><td>Libero SoC</td><td class="num">8</td><td class="num">512</td><td class="num">200 MHz</td><td>INT4 encoder only; Noul and Gate slots</td></tr>
+<tr><td><code>mpfs095t</code></td><td>PolarFire SoC MPFS095T</td><td>Libero SoC</td><td class="num">24</td><td class="num">1,024</td><td class="num">250 MHz</td><td></td></tr>
+<tr><td><code>mpfs250t</code></td><td>PolarFire SoC MPFS250T (Icicle Kit)</td><td>Libero SoC</td><td class="num">64</td><td class="num">2,048</td><td class="num">250 MHz</td><td>Reference target</td></tr>
+<tr><td><code>mpfs460t</code></td><td>PolarFire SoC MPFS460T</td><td>Libero SoC</td><td class="num">128</td><td class="num">4,096</td><td class="num">250 MHz</td><td></td></tr>
+<tr><td><code>mpf500t</code></td><td>PolarFire MPF500T (no MSS)</td><td>Libero SoC</td><td class="num">128</td><td class="num">4,096</td><td class="num">250 MHz</td><td>Host over PCIe or your own soft core</td></tr>
+<tr><td><code>rtpf500</code></td><td>RT PolarFire</td><td>Libero SoC</td><td class="num">96</td><td class="num">2,048</td><td class="num">200 MHz</td><td>Radiation-tolerant; TMR on result file</td></tr>
+<tr><td><code>alveo-u55c</code></td><td>AMD Alveo U55C</td><td>Vitis</td><td class="num">256</td><td class="num">8,192</td><td class="num">300 MHz</td><td>Hosted-API card</td></tr>
+<tr><td><code>sim</code></td><td>Host-side cycle-accurate model</td><td>none</td><td class="num">256</td><td class="num">8,192</td><td class="num">—</td><td>For CI; reports cycles, not time</td></tr>
+</table></div>
+<p class="note"><b>Picking a part</b>Slots and state are traded against each other inside the same LE and math-block budget. <code>reflex check</code> reports the fit before you run a two-hour place-and-route. The PolarFire family's non-volatile configuration means a programmed part is live at power-up with no bitstream load, which matters for act-then-explain deployments.</p>
+</article>
+
+<article id="designing">
+<p class="eyebrow">Engineer's guide</p>
+
+<h1>Designing for the fabric</h1>
+
+<h2>Step 1. Find the decision in the data path</h2>
+<p>A hosted model sits beside your system: your code calls it, waits, and branches. Reflex sits <em>in</em> your system's data path, where the data already flows: a packet stream, a sensor bus, a log pipe, a market feed, a microphone. Draw your pipeline and mark the point where a judgement is made and something downstream changes because of it. That point is where the core goes. If there is no such point, if the judgement is made by a person reading a report, Reflex has nothing to accelerate.</p>
+<p class="note"><b>Ask</b>Where in the flow is the decision taken, and what is the next thing that happens because of it?</p>
+
+<h2>Step 2. Make the state a window</h2>
+<p>A fabric core has a fixed input buffer. Decide what one unit of state is: one packet, one message, one 20 ms audio frame, one log line with its previous five, one order-book delta with the last hundred. The window must fit the buffer and must contain everything the decision needs, because there is no second look. Overlap consecutive windows when events can straddle a boundary.</p>
+<p>The payoff is that windows are independent. Independent inputs pipeline at II = 1, so the core processes one window per clock-count regardless of how many are queued, and the latency for any single window is the same.</p>
+<p class="note"><b>Ask</b>What is the smallest window that contains the whole decision, and how often does one arrive?</p>
+
+<h2>Step 3. Decompose into atomic questions</h2>
+<p>This is the rule that makes the fabric work. Each question must be answerable from one window by one small head. Not "is this packet malicious" but five Nouls: unusual port, known-bad pattern in payload, rate anomaly in the window, protocol violation, matches an active rule set. Not "how good is this lead" but three Scores. Combine in code, or in a Gate.</p>
+<p>Decomposed questions are also what makes the slot architecture cheap. A broad question needs a big head; five narrow ones need five small heads that all finish in the same cycle.</p>
+<p class="note"><b>Ask</b>Could a knowledgeable person answer each question in a few seconds from the window alone?</p>
+
+<h2>Step 4. Decide what acts on the answer</h2>
+<p>Three options, in increasing speed and decreasing flexibility:</p>
+<ul>
+<li><strong>Your code reads the register file.</strong> Full flexibility; adds the processor's read latency and whatever your code does.</li>
+<li><strong>The answer leaves on a stream.</strong> One result packet per window on AXI4-Stream, consumed by the next hardware block. No processor in the loop.</li>
+<li><strong>A Gate drives a signal.</strong> Threshold and hysteresis in fabric, a pin or interrupt out. The decision and the action are the same cycle; the processor learns about it afterwards.</li>
+</ul>
+<p>Use the fastest option that your veto path can tolerate. The <a href="#patterns">act-then-explain</a> pattern is the Gate with a software veto behind it.</p>
+<p class="note"><b>Ask</b>If this answer is wrong, how is it undone, and by what?</p>
+
+<h2>Step 5. Set the latency budget before you build</h2>
+<p>Write down the deadline in the units of the data: cycles of a control loop, inter-arrival time of packets, frame period. Convert the core's worst-case cycle count to time at the closed clock and compare. On the emulator this is a modelled number; after <a href="#milestones">M2</a> it is a measured one. If it does not fit, the levers are, in order: a shorter window, fewer encoder layers, lower precision, a bigger part. Adding questions is never a lever, because questions do not cost cycles.</p>
+<p class="note"><b>Ask</b>What is the deadline, where does it come from, and what fraction of it can the decision take?</p>
+
+<h2>Step 6. Plan for change</h2>
+<p>Criteria change without reconfiguration (they are µSRAM contents). Question <em>types</em> change with a partial reconfiguration of one slot. Window size, encoder depth and buffer depth change with a full bitstream. Put the things most likely to change in the layer that is cheapest to change: thresholds and criteria in registers, question types in slots, the encoder last.</p>
+<p class="note"><b>Ask</b>Which of these will change next quarter, and which layer is it in?</p>
+
+<h2>What "faster" means in practice</h2>
+<p>Not a smaller number on the same benchmark. A hosted model is a request-response service; Reflex is a component in a data path. The problems Reflex is for are the ones a hosted model cannot be put in at all: decisions per packet, per frame, per tick, per sample, where the deadline is set by hardware and the volume makes a round trip per decision impossible. For those, "better" means the decision happens where the data is, in a fixed number of cycles, with a question-and-answer contract your code can branch on. The <a href="#blueprints">Blueprints</a> page is a list of such problems with the window, questions and actuation worked out.</p>
+
+<h2 class="part" id="patterns">Patterns</h2>
+<div class="tw"><table>
+<tr><th>Pattern</th><th>What it does</th><th>Benefits</th><th>Needs</th></tr>
+<tr><td><a href="#p-fanout">Speculative fan-out</a></td><td>Send many questions, including speculative ones, and decide in code</td><td>Cost, speed</td><td>Any decision model</td></tr>
+<tr><td><a href="#p-gate">Confidence-gated routing</a></td><td>Use confidence as a second decision axis</td><td>Reliability, safety</td><td>Any decision model</td></tr>
+<tr><td><a href="#p-composite">Composite scoring</a></td><td>Atomic scores combined with weights you control</td><td>Cost, reliability</td><td>Any decision model</td></tr>
+<tr><td><a href="#p-intent">Intent routing</a></td><td>Classify a request and route to the right handler</td><td>Cost, speed</td><td>Any decision model</td></tr>
+<tr><td><a href="#p-window">Windowed state</a></td><td>Chunk a long state and pipeline the chunks</td><td>Bounded latency</td><td>Fabric</td></tr>
+<tr><td><a href="#p-budget">Latency budgeting</a></td><td>Treat the cycle count as a hardware deadline</td><td>Determinism</td><td>Fabric</td></tr>
+<tr><td><a href="#p-act">Act-then-explain</a></td><td>A Gate acts; the processor reads why afterwards</td><td>Safety, speed</td><td>Fabric</td></tr>
+</table></div>
+
+<h4 id="p-fanout">Speculative fan-out</h4>
+<p>On the fabric, extra questions are free up to the slot count: each one is a circuit that was going to be idle anyway. Ask every question that might matter and let code pick what to use. The one cost is slots, which you size in configuration.</p>
+<h4 id="p-gate">Confidence-gated routing</h4>
+<p>The answer says what; confidence says whether to act. See <a href="#confidence">Confidence &amp; timing</a>.</p>
+<h4 id="p-composite">Composite scoring</h4>
+<p>Break a complex judgement into atomic Scores, combine with weights in code. When priorities change, change a coefficient; nothing is resynthesised.</p>
+<pre><code>w = {<span class="s">"market"</span>: 0.4, <span class="s">"feasibility"</span>: 0.35, <span class="s">"differentiation"</span>: 0.25}
+total = sum(w[k] * r.scores[k].score / 2 <span class="k">for</span> k <span class="k">in</span> w)   <span class="c"># each Score has 3 levels, 0–2</span></code></pre>
+<h4 id="p-intent">Intent routing</h4>
+<p>One Choice classifies an incoming request; code routes it to deterministic logic, a specialist LLM, or a person. Reflex makes the router cheap enough to put in front of every packet, not just every conversation.</p>
+<h4 id="p-window">Windowed state</h4>
+<p>When a state exceeds the buffer, split it into overlapping windows of <code>state_tokens</code> and send each as its own request with the same questions. Chunks are independent so they pipeline at II = 1; the SDK's <code>windowed()</code> helper does the split and merges Noul answers with max, Score with mean, and Choice by summed probabilities.</p>
+<pre><code>r = client.windowed(state=long_contract, tokens=2048, overlap=128,
+                    questions={<span class="s">"has_termination"</span>: Noul(instructions=<span class="s">"A clause lets either party end the agreement early"</span>)},
+                    merge=<span class="s">"max"</span>)
+<span class="k">print</span>(r.nouls[<span class="s">"has_termination"</span>].noul, r.timing.cycles)   <span class="c"># 0.97  11180 (5 chunks, deterministic per chunk)</span></code></pre>
+<h4 id="p-budget">Latency budgeting</h4>
+<p>Read <code>worst_case_cycles</code> from the bitstream info at start-up, convert to time at the closed clock, and refuse to deploy if it exceeds the control loop's deadline. The cycle count cannot get worse at run time, so a check at start-up is a guarantee, not a hope.</p>
+<h4 id="p-act">Act-then-explain</h4>
+<p>A Gate asserts a pin as soon as its Noul crosses threshold. The processor reads the full answer afterwards, logs it, and can override by de-asserting. The decision is in the fabric; the explanation is in the register file. Use this wherever the cost of acting late is higher than the cost of acting on a false positive you can undo.</p>
+
+<h2 class="part" id="when-to-use">When to use Reflex</h2>
+<div class="tw"><table>
+<tr><th>Your situation</th><th>Why Reflex fits</th></tr>
+<tr><td>The decision is made per packet, frame, tick, sample or log line</td><td>The core sits in the data path, so there is no round trip per item</td></tr>
+<tr><td>Something downstream must act within a hardware deadline</td><td>The cycle count is fixed and known in advance, and a Gate can drive a pin directly</td></tr>
+<tr><td>The data never leaves the device: no network, or no time for one</td><td>The whole decision runs on the board</td></tr>
+<tr><td>You need the same latency every time, not just on average</td><td>A fixed circuit has no queue, scheduler or cache, so the slowest answer is as fast as the typical one</td></tr>
+<tr><td>You ask many questions about the same input</td><td>Each question is its own circuit, so adding questions does not add time</td></tr>
+<tr><td>The questions are settled and the state fits a fixed-size window</td><td>Settled questions can be compiled into the fabric, and a fixed window is what the pipeline is built for</td></tr>
+</table></div>
+<p>Prototype questions in software first, on the <a href="#toolkit">emulator</a> or through the <a href="#so-compat">drop-in</a>. Move a decision to fabric once its questions stop changing.</p>
+</article>
+
+<article id="blueprints">
+<p class="eyebrow">Engineer's guide</p>
+
+<h1>Blueprints</h1>
+
+<h2>1. Inline packet triage on a SmartNIC</h2>
+<p><strong>Where.</strong> After the P4 or hand-written parser, before the host DMA. <strong>Window.</strong> Parsed header fields plus the first 256 bytes of payload, flattened to a key-value byte string by the parser. <strong>Deadline.</strong> Inter-arrival time at line rate; the core must keep up or apply back-pressure.</p>
+<pre><code>[questions.syn_flood]   type=<span class="s">"noul"</span>  instructions=<span class="s">"This flow's SYN rate in the window is anomalous for the source"</span>
+[questions.known_bad]   type=<span class="s">"noul"</span>  instructions=<span class="s">"The payload prefix matches a known exploit pattern"</span>
+[questions.proto_viol]  type=<span class="s">"noul"</span>  instructions=<span class="s">"Header fields violate the declared protocol"</span>
+[questions.sensitivity] type=<span class="s">"score"</span> instructions=<span class="s">"How sensitive is the destination service"</span>
+                        criteria=[<span class="s">"public"</span>, <span class="s">"internal"</span>, <span class="s">"restricted"</span>]
+[questions.drop]        type=<span class="s">"gate"</span>  instructions=<span class="s">"This packet should be dropped"</span> threshold=0.9 output=<span class="s">"axis:drop_valid"</span></code></pre>
+<p><strong>Acts.</strong> <code>drop_valid</code> feeds the packet filter's drop input directly. The host reads the full answer only for packets it receives, for logging. <strong>Why fabric.</strong> A round trip per packet is not a design option at any line rate.</p>
+
+<h2>2. Market-data event classification</h2>
+<p><strong>Where.</strong> Between the feed handler and the strategy logic, both already in fabric on a tick-to-trade card. <strong>Window.</strong> The decoded message plus the last N book deltas for the symbol, kept in a ring in LSRAM. <strong>Deadline.</strong> The card's existing budget per message, which is nanoseconds to low microseconds.</p>
+<pre><code>[questions.sweep]     type=<span class="s">"noul"</span>   instructions=<span class="s">"The window shows a sweep through multiple price levels"</span>
+[questions.spoof]     type=<span class="s">"noul"</span>   instructions=<span class="s">"Large orders were placed and cancelled without trading"</span>
+[questions.regime]    type=<span class="s">"choice"</span> instructions=<span class="s">"Which liquidity regime is the book in"</span>
+                      criteria={ thin=<span class="s">"few levels, wide spread"</span>, normal=<span class="s">""</span>, deep=<span class="s">"many levels, tight spread"</span> }
+[questions.halt]      type=<span class="s">"gate"</span>   instructions=<span class="s">"Conditions warrant pausing quoting on this symbol"</span>
+                      threshold=0.95 hysteresis=0.2 output=<span class="s">"axis:quote_pause"</span></code></pre>
+<p><strong>Acts.</strong> <code>quote_pause</code> gates the strategy's output; <code>regime</code> is read by the strategy block as a parameter. <strong>Note.</strong> This is a classifier, not a risk control; it runs alongside the existing kill switch, never instead of it.</p>
+
+<h2>3. Voice command on a device with no cloud</h2>
+<p><strong>Where.</strong> On the audio path, before any codec. <strong>Window.</strong> 20 ms of 16 kHz PCM, 50% overlap. <strong>Deadline.</strong> One window period; the Gate must settle before the next window completes.</p>
+<pre><code>[questions.speech]  type=<span class="s">"pulse"</span> instructions=<span class="s">"This window contains human speech"</span> window={ bytes=640, stride=320 }
+[questions.wake]    type=<span class="s">"pulse"</span> instructions=<span class="s">"The wake word was spoken"</span>              window={ bytes=640, stride=320 }
+[questions.stop]    type=<span class="s">"gate"</span>  instructions=<span class="s">"The operator said stop, halt, or emergency"</span>
+                    threshold=0.85 hysteresis=0.1 output=<span class="s">"gpio:PB4"</span></code></pre>
+<p><strong>Acts.</strong> <code>stop</code> drives a relay in parallel with the hard-wired stop; <code>wake</code> raises an interrupt that starts the processor. <strong>Why fabric.</strong> No network, and a 20 ms frame period rules out any round trip.</p>
+
+<h2>4. Log and telemetry triage at ingest</h2>
+<p><strong>Where.</strong> On the ingest card or the first hop of the pipeline, before storage. <strong>Window.</strong> One line plus its five predecessors from the same source. <strong>Deadline.</strong> Sustained ingest rate; back-pressure is acceptable, loss is not.</p>
+<pre><code>[questions.severity]   type=<span class="s">"score"</span>  instructions=<span class="s">"Severity of the event in the last line, given the preceding lines"</span>
+                       criteria=[<span class="s">"noise"</span>, <span class="s">"info"</span>, <span class="s">"warning"</span>, <span class="s">"error"</span>, <span class="s">"incident"</span>]
+[questions.pii]        type=<span class="s">"noul"</span>   instructions=<span class="s">"The line contains a personal identifier that must be redacted"</span>
+[questions.component]  type=<span class="s">"choice"</span> instructions=<span class="s">"Which subsystem emitted this"</span> criteria={ ...your components... }
+[questions.page]       type=<span class="s">"gate"</span>   instructions=<span class="s">"This event should page the on-call engineer now"</span>
+                       threshold=0.92 hysteresis=0.3 output=<span class="s">"irq:4"</span></code></pre>
+<p><strong>Acts.</strong> <code>severity</code> and <code>component</code> go into the index as fields; <code>pii</code> routes the line to the redactor; <code>page</code> interrupts the control processor. <strong>Why fabric.</strong> Software can do this per line in a batch job afterwards. Reflex does it before the line is written, so the index never has to be rebuilt.</p>
+
+<h2>5. Sensor anomaly on an industrial bus</h2>
+<p><strong>Where.</strong> Between the fieldbus controller and the PLC. <strong>Window.</strong> The last 64 samples of each of up to 16 channels, decimated to fit the buffer. <strong>Deadline.</strong> The control-loop tick.</p>
+<pre><code>[questions.drift]     type=<span class="s">"noul"</span>  instructions=<span class="s">"A channel is drifting outside its historical band"</span>
+[questions.stuck]     type=<span class="s">"noul"</span>  instructions=<span class="s">"A channel has stopped changing while others move"</span>
+[questions.severity]  type=<span class="s">"score"</span> instructions=<span class="s">"How severe is the worst anomaly in the window"</span>
+                      criteria=[<span class="s">"none"</span>, <span class="s">"watch"</span>, <span class="s">"degraded"</span>, <span class="s">"fault"</span>]
+[questions.trip]      type=<span class="s">"gate"</span>  instructions=<span class="s">"The process should be moved to a safe state"</span>
+                      threshold=0.97 hysteresis=0.4 output=<span class="s">"gpio:SAFE_REQ"</span></code></pre>
+<p><strong>Acts.</strong> <code>SAFE_REQ</code> is an input to the safety PLC, which makes the final call. <strong>Note.</strong> The hysteresis is wide on purpose; a trip that chatters is worse than one that is slow to release.</p>
+
+<h2>6. Video frame triage before encode</h2>
+<p><strong>Where.</strong> On the sensor's MIPI or SLVS-EC path, before the encoder. <strong>Window.</strong> A downscaled luma thumbnail and the previous frame's thumbnail, as bytes. Requires the vision bitstream. <strong>Deadline.</strong> The frame period.</p>
+<pre><code>[questions.motion]    type=<span class="s">"noul"</span> instructions=<span class="s">"There is significant motion between the two frames"</span>
+[questions.occluded]  type=<span class="s">"noul"</span> instructions=<span class="s">"The lens is covered or the image is blank"</span>
+[questions.record]    type=<span class="s">"gate"</span> instructions=<span class="s">"This frame should be encoded and stored"</span> threshold=0.7 output=<span class="s">"axis:encode_en"</span></code></pre>
+<p><strong>Acts.</strong> <code>encode_en</code> gates the encoder; frames that are not interesting are never compressed. <strong>Why fabric.</strong> Nothing else can sit on a MIPI bus.</p>
+
+<h2>Reading the blueprints</h2>
+<p>Every one has the same shape: a window that fits the buffer, three to five atomic questions, one Gate that acts, and a software path that logs and can veto. If your problem fits that shape, Reflex fits your problem. See <a href="#when-to-use">When to use Reflex</a> for the full checklist.</p>
+</article>
+
+<article id="configuration">
+<p class="eyebrow">Build</p>
+
+<h1>Configuration</h1>
+<p class="lede"><code>reflex.toml</code> describes the fabric, the question slots, the quantisation and the outputs. The hosted API ignores the fabric sections; a board build uses all of them.</p>
+
+<pre><code><span class="c"># reflex.toml — generated by `reflex init`, edited by you</span>
+[project]
+name   = <span class="s">"support-router"</span>
+model  = <span class="s">"reflex-1.0.0"</span>
+
+[fabric]
+target        = <span class="s">"mpfs250t"</span>       <span class="c"># see Fabric targets</span>
+clock_mhz     = <span class="n">250</span>
+state_tokens  = <span class="n">2048</span>             <span class="c"># LSRAM buffer; sets worst-case cycles</span>
+slots         = <span class="n">64</span>               <span class="c"># must be ≥ number of questions</span>
+partial_reconfig = <span class="k">true</span>          <span class="c"># floorplan slots as PR partitions</span>
+
+[quantization]
+encoder  = <span class="s">"int8"</span>                <span class="c"># int8 | int4 | hgq (per-parameter, from training)</span>
+heads    = <span class="s">"int8"</span>
+confidence_format = <span class="s">"q1.15"</span>
+
+[io]
+state_in   = <span class="s">"axis:s_axis_state"</span>  <span class="c"># AXI4-Stream slave, 8-bit beats</span>
+result_out = <span class="s">"axis:m_axis_result"</span> <span class="c"># optional; registers are always present</span>
+irq        = <span class="s">"irq:2"</span>              <span class="c"># request-done interrupt to the MSS</span>
+
+[questions.department]
+type = <span class="s">"choice"</span>
+instructions = <span class="s">"Which team should handle this"</span>
+criteria = { billing = <span class="s">"Payment or subscription issues"</span>,
+             technical = <span class="s">"Bugs or integration problems"</span>,
+             sales = <span class="s">"Pricing or account questions"</span> }
+
+[questions.frustration]
+type = <span class="s">"score"</span>
+instructions = <span class="s">"How frustrated the customer appears"</span>
+criteria = [<span class="s">"Calm, just stating facts"</span>, <span class="s">"Frustrated but civil"</span>, <span class="s">"Very angry, strong language"</span>]
+
+[questions.is_urgent]
+type = <span class="s">"noul"</span>
+instructions = <span class="s">"The message conveys urgency or time-sensitivity"</span>
+
+[questions.stop]
+type = <span class="s">"gate"</span>
+instructions = <span class="s">"The operator said stop, halt, or emergency"</span>
+threshold  = <span class="n">0.85</span>
+hysteresis = <span class="n">0.10</span>
+output     = <span class="s">"gpio:PB4"</span></code></pre>
+
+<h2>Keys</h2>
+<div class="field"><span class="nm">[fabric].target</span><span class="ty">string</span><span class="req">required for synth</span><p>Device id from <a href="#targets">Fabric targets</a>. Picks the toolchain, the LE/math-block budget and the available pins.</p></div>
+<div class="field"><span class="nm">[fabric].clock_mhz</span><span class="ty">integer</span><p>Requested fabric clock. <code>reflex synth</code> fails if timing does not close; lower it or reduce <code>slots</code>.</p></div>
+<div class="field"><span class="nm">[fabric].state_tokens</span><span class="ty">integer · 256–8192</span><p>Depth of the state buffer. Directly sets the worst-case cycle count. Must be a power of two.</p></div>
+<div class="field"><span class="nm">[fabric].slots</span><span class="ty">integer · 1–256</span><p>Number of head slots to lay out. Unused slots are available at run time for questions supplied in the request body.</p></div>
+<div class="field"><span class="nm">[quantization].encoder</span><span class="ty">"int8" | "int4" | "hgq"</span><p>Weight precision. <code>int4</code> halves math-block use and costs about one point of calibration; <code>hgq</code> uses the per-parameter bit-widths from training and gives the best fit.</p></div>
+<div class="field"><span class="nm">[io].state_in / result_out / irq</span><span class="ty">string</span><p>Port bindings. <code>axis:</code> names an AXI4-Stream port, <code>irq:</code> an interrupt line into the processor subsystem, <code>gpio:</code> a fabric pin.</p></div>
+<div class="field"><span class="nm">[questions.&lt;name&gt;]</span><span class="ty">table</span><p>One table per question, identical fields to the request body. Questions here are compiled in; questions in the request body use spare slots.</p></div>
+
+<h2>Compiled-in vs. request-time questions</h2>
+<p>A question in <code>reflex.toml</code> has its criteria embeddings baked into the slot's µSRAM at synthesis time. A question sent in the request body is written into a spare slot before evaluation, which costs 1 cycle per criterion token on the hosted service and on boards with the loader enabled. Compile in what is stable; send what varies.</p>
+
+<h2>CLI</h2>
+<div class="tw"><table>
+<tr><th>Command</th><th>What it does</th></tr>
+<tr><td><code>reflex init --target &lt;id&gt;</code></td><td>Writes a starter <code>reflex.toml</code> and a Libero or Vitis project skeleton.</td></tr>
+<tr><td><code>reflex check</code></td><td>Validates questions and estimates resources and worst-case cycles without a toolchain.</td></tr>
+<tr><td><code>reflex synth</code></td><td>Synthesis, place-and-route, timing closure, bitstream. Prints the slot map.</td></tr>
+<tr><td><code>reflex flash [--pr slot]</code></td><td>Programs the full bitstream, or one slot partition.</td></tr>
+<tr><td><code>reflex bench --n N</code></td><td>Sends N requests and reports p50/p99/p100 cycles and host overhead.</td></tr>
+<tr><td><code>reflex sim</code></td><td>Cycle-accurate simulation of the configured core on the host, for CI.</td></tr>
+</table></div>
+</article>
+
+<article id="api">
+<p class="eyebrow">Reference</p>
+
+<h1>POST /v1/systemzero</h1>
+<p class="lede">Answer one or more questions about the content supplied in <code>state</code>, in one fabric pass. The request is <code>state</code> plus named typed questions; answers come back under the same names with a <code>timing</code> block.</p>
+<pre><code>POST https://api.reflex.dev/v1/systemzero
+Authorization: Bearer &lt;API_KEY&gt;
+Content-Type: application/json</code></pre>
+
+<h2>Request body</h2>
+<div class="field"><span class="nm">model</span><span class="ty">string</span><span class="req">required</span><p>Model or alias, e.g. <code>reflex-latest</code>. <code>GET /v1/models</code> lists what your account can send.</p></div>
+<div class="field"><span class="nm">state</span><span class="ty">string | object | array | {bytes_base64}</span><span class="req">required</span><p>The content all questions refer to. Byte states are for Pulse questions.</p></div>
+<div class="field"><span class="nm">questions</span><span class="ty">object</span><span class="req">required</span><p>Named questions. Each has a <code>type</code> of <code>noul</code>, <code>choice</code>, <code>score</code>, <code>box</code>, <code>pulse</code> or <code>gate</code>, plus the fields that type needs. Answers come back under the same names.</p></div>
+<div class="field"><span class="nm">assets</span><span class="ty">object</span><p>Image assets keyed by placeholder. Requires <code>Reflex-Danger-Zone-Images: true</code>.</p></div>
+<div class="field"><span class="nm">timing</span><span class="ty">object</span><p>Optional. <code>{ "require_deterministic": true }</code> makes the service reject (HTTP 413) any state that would need chunking instead of chunking it. <code>{ "max_cycles": N }</code> rejects before evaluation if the worst case exceeds N.</p></div>
+
+<h2>Question fields by type</h2>
+<div class="tw"><table>
+<tr><th>Type</th><th>Fields</th></tr>
+<tr><td><code>noul</code></td><td><code>instructions</code>; optional <code>criteria: { true, false }</code></td></tr>
+<tr><td><code>choice</code></td><td><code>instructions</code>; <code>criteria</code> object of 1–255 named options <em>(required)</em></td></tr>
+<tr><td><code>score</code></td><td><code>instructions</code>; <code>criteria</code> array of 1–10 ordered levels <em>(required)</em></td></tr>
+<tr><td><code>box</code></td><td><code>instructions</code>; image state via <code>assets</code></td></tr>
+<tr><td><code>pulse</code></td><td><code>instructions</code>; <code>window: { bytes, stride }</code> <em>(required)</em>; optional <code>criteria</code></td></tr>
+<tr><td><code>gate</code></td><td><code>instructions</code>; <code>threshold</code> (0–1) <em>(required)</em>; optional <code>hysteresis</code>, <code>output</code></td></tr>
+</table></div>
+
+<h2>Response body</h2>
+<pre><code>{
+  "model": "reflex-1.0.0",
+  "answers": {
+    "department":  { "type": "choice", "choice": "technical", "confidence": 1.0,
+                     "probabilities": { "technical": 1.0, "billing": 0.0, "sales": 0.0 } },
+    "frustration": { "type": "score", "score": 0.67, "confidence": 0.5,
+                     "legend": { "0": "Calm, just stating facts", "1": "Frustrated but civil", "2": "Very angry, strong language" },
+                     "probabilities": { "0": 0.33, "1": 0.67, "2": 0.0 } },
+    "is_urgent":   { "type": "noul", "noul": 0.99 }
+  },
+  "timing": { "cycles": 212, "clock_mhz": 250, "latency_ns": 848,
+              "deterministic": true, "bitstream": "reflex-1.0.0+alveo-u55c.a91c" },
+  "usage": { "input_tokens": 92, "slots_used": 3 }
+}</code></pre>
+<div class="field"><span class="nm">answers</span><span class="ty">object</span><p>Keyed by question name. Each answer's <code>type</code> matches its question. Field sets per type are under <a href="#primitives">Question types</a>.</p></div>
+<div class="field"><span class="nm">timing</span><span class="ty">object</span><p><code>cycles</code> measured in fabric; <code>clock_mhz</code> the closed clock; <code>latency_ns = cycles × 1000 / clock_mhz</code>; <code>deterministic</code> false only for chunked states; <code>bitstream</code> identifies the exact build that answered.</p></div>
+<div class="field"><span class="nm">usage</span><span class="ty">object</span><p><code>input_tokens</code> is what you are billed for. <code>slots_used</code> is informational; slots are not billed.</p></div>
+
+<h2>Headers</h2>
+<div class="tw"><table>
+<tr><th>Header</th><th>Direction</th><th>Meaning</th></tr>
+<tr><td><code>Reflex-Danger-Zone-Images: true</code></td><td>request</td><td>Enable assets and Box questions.</td></tr>
+<tr><td><code>Reflex-Prefer-Target: &lt;id&gt;</code></td><td>request</td><td>Ask for a specific card type so cycle counts match your board.</td></tr>
+<tr><td><code>Reflex-Host-Latency-us</code></td><td>response</td><td>Microseconds spent outside the fabric (queue, PCIe, DMA).</td></tr>
+<tr><td><code>Reflex-Cycles</code></td><td>response</td><td>Same as <code>timing.cycles</code>, for log scrapers.</td></tr>
+</table></div>
+
+<h2 class="part" id="api-stream">Stream mode</h2>
+<p class="sublede">Open a WebSocket, send state bytes as they arrive, and receive one answer frame per window. This is Pulse's natural home and the hosted mirror of the on-board AXI4-Stream interface.</p>
+<pre><code>wss://api.reflex.dev/v1/systemzero/stream?model=reflex-latest
+Authorization: Bearer &lt;API_KEY&gt;</code></pre>
+<h3>Protocol</h3>
+<ol>
+<li>Client sends one JSON text frame: <code>{ "questions": { … } }</code>. Only <code>pulse</code>, <code>noul</code> and <code>gate</code> types are allowed in stream mode.</li>
+<li>Server replies <code>{ "ready": true, "bitstream": "…", "window_cycles": 71 }</code>.</li>
+<li>Client sends binary frames of state bytes, any size. The fabric windows them per each Pulse question's <code>window</code>.</li>
+<li>Server sends one JSON frame per completed window: <code>{ "window": 17, "answers": { "speech": 0.93, "stop": { "gate": 1 } }, "cycles": 71 }</code>.</li>
+<li>Client closes, or sends <code>{ "flush": true }</code> to force partial last windows.</li>
+</ol>
+<pre><code><span class="k">async with</span> client.stream(questions={
+    <span class="s">"speech"</span>: Pulse(instructions=<span class="s">"This window contains human speech"</span>, window=Window(bytes=640, stride=320)),
+    <span class="s">"stop"</span>:   Gate(instructions=<span class="s">"The operator said stop"</span>, threshold=0.85),
+}) <span class="k">as</span> s:
+    <span class="k">async for</span> chunk <span class="k">in</span> microphone():          <span class="c"># 16 kHz PCM</span>
+        <span class="k">await</span> s.send(chunk)
+        <span class="k">async for</span> frame <span class="k">in</span> s.ready():
+            <span class="k">if</span> frame.answers[<span class="s">"stop"</span>].gate: halt()</code></pre>
+<p class="note"><b>Back-pressure</b>The fabric consumes one byte per cycle. If you send faster than 250 MB/s the server applies WebSocket back-pressure rather than dropping. On a board the AXI4-Stream <code>tready</code> signal does the same job.</p>
+
+<h2 class="part" id="api-models">Models &amp; bitstreams</h2>
+<p class="sublede">Every model is a bitstream. The <code>model</code> field picks which one answers; the response's <code>timing.bitstream</code> says exactly which build did.</p>
+<div class="tw"><table>
+<tr><th></th><th>Reflex 1.0</th><th>Reflex 1.0 Vision</th></tr>
+<tr><td>Model ID</td><td><code>reflex-1.0.0</code></td><td><code>reflex-vision-1.0.0</code></td></tr>
+<tr><td>Price</td><td>Not set; no hosted service exists yet</td><td>Not set</td></tr>
+<tr><td>Context (hosted)</td><td>8k tokens</td><td>8k tokens + 1 image</td></tr>
+<tr><td>Input</td><td>Text, bytes</td><td>Text, bytes, images</td></tr>
+<tr><td>Question types</td><td>Choice, Score, Noul, Pulse, Gate</td><td>+ Box</td></tr>
+<tr><td>Hosted target</td><td><code>alveo-u55c</code></td><td><code>alveo-u55c</code></td></tr>
+<tr><td>Board targets</td><td>All PolarFire targets</td><td><code>mpfs460t</code>, <code>mpf500t</code></td></tr>
+</table></div>
+<p>Output is free. Slots are free. You pay per input token, and a Pulse stream is billed per byte-window at the same rate as the tokens it would have produced.</p>
+
+<h3>Aliases</h3>
+<div class="tw"><table>
+<tr><th>Alias</th><th>Points to</th><th>Meaning</th></tr>
+<tr><td><code>reflex-latest</code></td><td><code>reflex-1.0.0</code></td><td>Most recent stable bitstream. SDK default.</td></tr>
+<tr><td><code>reflex-preview</code></td><td><code>reflex-1.0.0</code></td><td>Moves ahead of latest when a preview build exists.</td></tr>
+</table></div>
+<p>An alias moves when a new bitstream ships, so cycle counts and answers can change without any change to your code. If you have tuned confidence thresholds or latency budgets against one build, send its versioned ID. The <code>timing.bitstream</code> field is the right thing to log.</p>
+
+<h3>Listing models</h3>
+<pre><code>GET /v1/models
+<span class="c">// → { "models": [ { "name": "reflex-latest", "description": "…", "release_date": "2026-10-14",</span>
+<span class="c">//                   "targets": ["alveo-u55c","mpfs250t",…], "worst_case_cycles": { "2048": 2236, … } } ] }</span></code></pre>
+
+<h3>Customising Reflex</h3>
+<p>Reflex is not fine-tuned with customer data; the same weights serve every account and every board. You shape answers through the request: proprietary content in <code>state</code>, domain rules in <code>instructions</code> and <code>criteria</code>, broad judgements decomposed into atomic questions. On a board you additionally shape the <em>fabric</em>: slot count, buffer depth, quantisation and I/O bindings in <a href="#configuration">configuration</a>.</p>
+
+<h2 class="part" id="api-errors">Errors &amp; limits</h2>
+<div class="tw"><table>
+<tr><th>Status</th><th>Meaning</th><th>What to do</th></tr>
+<tr><td><code>400</code></td><td>Application validation failure (e.g. too many questions for the target's slots)</td><td>Read <code>detail</code>; reduce questions or pick a bigger target</td></tr>
+<tr><td><code>401</code></td><td>Missing or invalid API key</td><td>Check <code>REFLEX_API_KEY</code></td></tr>
+<tr><td><code>413</code></td><td>State exceeds buffer and <code>timing.require_deterministic</code> was set</td><td>Use the windowed-state pattern</td></tr>
+<tr><td><code>422</code></td><td>Schema validation error; <code>detail</code> lists <code>loc</code>, <code>msg</code>, <code>type</code> per field</td><td>Fix the field</td></tr>
+<tr><td><code>429</code></td><td>Rate limit; <code>retry-after</code> header present</td><td>SDKs retry with backoff by default</td></tr>
+<tr><td><code>503</code></td><td>No card available for <code>Reflex-Prefer-Target</code></td><td>Drop the header or retry</td></tr>
+</table></div>
+<h3>Limits</h3>
+<ul>
+<li>Request body ≤ 4 MB; <code>gzip</code> and <code>zstd</code> content-encoding accepted.</li>
+<li>Rate limits are per organisation, in tokens per second and requests per second, shown in the console.</li>
+<li>Stream mode: one open socket per API key per card type by default.</li>
+</ul>
+<h3>On-board errors</h3>
+<p>The register file's <code>STATUS</code> word carries the same codes: <code>RFX_E_SLOTS</code>, <code>RFX_E_OVERFLOW</code> (state longer than buffer), <code>RFX_E_TIMING</code> (a Gate asserted during a partial reconfiguration). The C SDK maps them to <code>errno</code>-style returns.</p>
+</article>
+
+<article id="sdks">
+<p class="eyebrow">Reference</p>
+
+<h1>Python SDK</h1>
+<pre><code>pip install reflex-sdk            <span class="c"># client only</span>
+pip install "reflex-sdk[fabric]"  <span class="c"># + reflex CLI, Libero/Vitis drivers, cycle-accurate simulator</span></code></pre>
+<h2>Clients</h2>
+<pre><code><span class="k">from</span> reflex_sdk <span class="k">import</span> ReflexClient, AsyncReflexClient, RetryPolicy
+
+client = ReflexClient(model=<span class="s">"reflex-latest"</span>, retry=RetryPolicy(attempts=3, backoff=0.2))
+aclient = AsyncReflexClient()               <span class="c"># same surface, awaitable</span>
+
+info = client.bitstream_info()           <span class="c"># target, clock_mhz, worst_case_cycles by buffer size</span>
+models = client.models.list().models     <span class="c"># name, description, release_date, targets</span></code></pre>
+<h2>Questions and answers</h2>
+<pre><code><span class="k">from</span> reflex_sdk <span class="k">import</span> Choice, Score, Noul, Pulse, Gate, Window
+
+r = client.system_zero(state=..., questions={...})
+r.choices[<span class="s">"k"</span>].choice          <span class="c"># str (Literal of your option names)</span>
+r.choices[<span class="s">"k"</span>].probabilities   <span class="c"># dict[str, float]</span>
+r.scores[<span class="s">"k"</span>].score            <span class="c"># float</span>
+r.nouls[<span class="s">"k"</span>].noul              <span class="c"># float</span>
+r.pulses[<span class="s">"k"</span>].pulse            <span class="c"># list[float]</span>
+r.gates[<span class="s">"k"</span>].gate              <span class="c"># bool, .asserted_at_cycle: int | None</span>
+r.timing.cycles, r.timing.latency_ns, r.timing.deterministic
+r.answers[<span class="s">"k"</span>]                 <span class="c"># untyped union</span></code></pre>
+<h2>Windowing</h2>
+<pre><code>r = client.windowed(state=text, tokens=2048, overlap=128, questions=qs, merge=<span class="s">"max"</span>)</code></pre>
+<h2>Streams</h2>
+<pre><code><span class="k">async with</span> aclient.stream(questions=qs) <span class="k">as</span> s:
+    <span class="k">await</span> s.send(b<span class="s">"..."</span>)
+    <span class="k">async for</span> frame <span class="k">in</span> s:   <span class="c"># StreamFrame(window, answers, cycles)</span>
+        ...</code></pre>
+<h2>Local boards</h2>
+<pre><code><span class="k">from</span> reflex_sdk.fabric <span class="k">import</span> BoardClient
+board = BoardClient(<span class="s">"/dev/reflex0"</span>)         <span class="c"># UIO device exposed by the Linux driver on PolarFire SoC</span>
+r = board.system_zero(state=..., questions=...)   <span class="c"># identical response type</span></code></pre>
+<h2>Exceptions</h2>
+<p><code>ReflexError</code> → <code>APIError</code> (<code>BadRequestError</code>, <code>AuthenticationError</code>, <code>RateLimitError</code>, <code>StateTooLargeError</code>, <code>NoSlotsError</code>), <code>APIConnectionError</code>, <code>APITimeoutError</code>, <code>FabricError</code> (<code>TimingNotClosedError</code>, <code>ResourceExceededError</code>).</p>
+
+<h2 class="part" id="sdk-typescript">JavaScript / TypeScript SDK</h2>
+<p class="sublede">The answer to a Choice is typed as a union of exactly the option names you passed.</p>
+<pre><code>npm install @reflex/sdk
+npm pkg set type=module</code></pre>
+<pre><code><span class="k">import</span> { ReflexClient, choice, score, noul, pulse, gate } <span class="k">from</span> <span class="s">"@reflex/sdk"</span>;
+
+<span class="k">const</span> client = <span class="k">new</span> ReflexClient({ defaultModel: <span class="s">"reflex-latest"</span>, retry: { attempts: 3 } });
+
+<span class="k">const</span> r = <span class="k">await</span> client.systemZero({
+  state: msg,
+  questions: {
+    intent: choice(<span class="s">"What does the user want?"</span>, { refund: <span class="s">"Money back"</span>, cancel: <span class="s">"Stop the subscription"</span>, other: <span class="s">""</span> }),
+    anger:  score(<span class="s">"How angry"</span>, [<span class="s">"calm"</span>, <span class="s">"annoyed"</span>, <span class="s">"furious"</span>]),
+    legal:  noul(<span class="s">"The user threatens legal action"</span>),
+  },
+  timing: { maxCycles: 1500 },
+});
+
+r.answers.intent.choice;      <span class="c">// "refund" | "cancel" | "other"</span>
+r.answers.anger.score;        <span class="c">// number</span>
+r.timing.cycles;              <span class="c">// number — same every time</span></code></pre>
+<h3>Stream mode</h3>
+<pre><code><span class="k">const</span> s = <span class="k">await</span> client.stream({ questions: { speech: pulse(<span class="s">"Human speech"</span>, { bytes: 640, stride: 320 }) } });
+s.onFrame(f =&gt; { <span class="k">if</span> (f.answers.speech &gt; 0.9) light.on(); });
+mic.on(<span class="s">"data"</span>, buf =&gt; s.send(buf));</code></pre>
+<h3>Types</h3>
+<p><code>SystemZeroRequest&lt;Q&gt;</code>, <code>SystemZeroResult&lt;Q&gt;</code>, <code>ResultFor&lt;T&gt;</code>, <code>Timing</code>, <code>ChoiceQuestion&lt;T&gt;</code>, <code>ScoreQuestion&lt;T&gt;</code>, <code>NoulQuestion</code>, <code>PulseQuestion</code>, <code>GateQuestion</code>, <code>StreamFrame&lt;Q&gt;</code>. Errors mirror the Python SDK (<code>ReflexError</code>, <code>RateLimitError</code>, <code>StateTooLargeError</code>, …).</p>
+
+<h2 class="part" id="sdk-c">C / embedded SDK <span class="pill hw">hardware</span></h2>
+<p class="sublede">A header-only library for talking to a Reflex core from the processor next to it: PolarFire SoC's RISC-V MSS, a soft Mi-V core, or a host over PCIe. No allocation, no floating point required.</p>
+<pre><code><span class="k">#include</span> <span class="s">"reflex.h"</span>          <span class="c">/* generated per project by `reflex synth`; carries the slot map */</span>
+
+<span class="c">/* lifecycle */</span>
+<span class="k">int</span>  rfx_open (reflex_core_t *c, uintptr_t base);     <span class="c">/* AXI4-Lite register file        */</span>
+<span class="k">int</span>  rfx_reset(reflex_core_t *c);
+
+<span class="c">/* state in */</span>
+<span class="k">int</span>  rfx_push_state(reflex_core_t *c, <span class="k">const void</span> *buf, size_t n);   <span class="c">/* blocks on tready; 1 byte/cycle */</span>
+<span class="k">int</span>  rfx_push_state_dma(reflex_core_t *c, uintptr_t pa, size_t n);  <span class="c">/* non-blocking                   */</span>
+<span class="k">int</span>  rfx_wait_done(reflex_core_t *c);                               <span class="c">/* polls STATUS.DONE, or use IRQ  */</span>
+
+<span class="c">/* answers out — fixed point, Q1.15 */</span>
+rfx_q15_t    rfx_read_noul  (reflex_core_t *c, rfx_slot_t s);
+rfx_choice_t rfx_read_choice(reflex_core_t *c, rfx_slot_t s);   <span class="c">/* .index .label .conf .probs[]  */</span>
+rfx_score_t  rfx_read_score (reflex_core_t *c, rfx_slot_t s);   <span class="c">/* .value (Q4.12) .conf .probs[] */</span>
+<span class="k">int</span>          rfx_read_gate  (reflex_core_t *c, rfx_slot_t s, uint32_t *asserted_at);
+uint32_t     rfx_read_cycles(reflex_core_t *c);
+
+<span class="c">/* run-time questions into spare slots */</span>
+<span class="k">int</span>  rfx_load_noul(reflex_core_t *c, rfx_slot_t spare, <span class="k">const char</span> *instructions);
+<span class="k">int</span>  rfx_set_gate_threshold(reflex_core_t *c, rfx_slot_t s, rfx_q15_t thr, rfx_q15_t hyst);</code></pre>
+<h3>Register map (per core)</h3>
+<div class="tw"><table>
+<tr><th>Offset</th><th>Name</th><th>Access</th><th>Meaning</th></tr>
+<tr><td><code>0x000</code></td><td><code>CTRL</code></td><td>RW</td><td>bit0 start, bit1 reset, bit2 irq_en</td></tr>
+<tr><td><code>0x004</code></td><td><code>STATUS</code></td><td>RO</td><td>bit0 done, bit1 busy, bits8–15 error code</td></tr>
+<tr><td><code>0x008</code></td><td><code>CYCLES</code></td><td>RO</td><td>cycle count of the last request</td></tr>
+<tr><td><code>0x00C</code></td><td><code>BITSTREAM_ID</code></td><td>RO</td><td>hash of the loaded build</td></tr>
+<tr><td><code>0x010</code></td><td><code>STATE_LEN</code></td><td>RW</td><td>bytes pushed (auto-counts on stream)</td></tr>
+<tr><td><code>0x100 + 64·s</code></td><td><code>SLOT[s]</code></td><td>RO</td><td>type, top index, conf, 16× Q1.15 probabilities</td></tr>
+<tr><td><code>0x1000 + 4·s</code></td><td><code>GATE_THR[s]</code></td><td>RW</td><td>threshold ‖ hysteresis, Q1.15 each</td></tr>
+</table></div>
+<p>The Linux driver for PolarFire SoC exposes each core as <code>/dev/reflexN</code> (UIO) and an <code>reflex_core</code> sysfs node with the bitstream id and worst-case cycles, so the Python <code>BoardClient</code> and the C SDK agree on everything.</p>
+</article>
+
+<article id="examples">
+<p class="eyebrow">Reference</p>
+
+<h1>Software projects <span class="pill sw">software</span></h1>
+
+<h2>1. Line-rate LLM guardrails</h2>
+<p>Screen every message into and out of an LLM app with one Reflex request. Reflex puts the screen in the data path, so the guardrail never shows up in your p99.</p>
+<pre><code><span class="k">from</span> reflex_sdk <span class="k">import</span> ReflexClient, Noul, Score
+
+HAZARDS = {
+    <span class="s">"self_harm"</span>:  <span class="s">"The message seeks or offers instructions for self-harm"</span>,
+    <span class="s">"malware"</span>:    <span class="s">"The message requests working malicious code"</span>,
+    <span class="s">"pii_leak"</span>:   <span class="s">"The message contains a real person's private identifiers"</span>,
+    <span class="s">"injection"</span>:  <span class="s">"The message tries to override system instructions"</span>,
+}
+
+<span class="k">def</span> screen(client: ReflexClient, text: str) -&gt; str:
+    r = client.system_zero(
+        state=text,
+        questions={**{k: Noul(instructions=v) <span class="k">for</span> k, v <span class="k">in</span> HAZARDS.items()},
+                   <span class="s">"severity"</span>: Score(instructions=<span class="s">"Severity if the worst hazard is real"</span>,
+                                     criteria=[<span class="s">"none"</span>, <span class="s">"low"</span>, <span class="s">"moderate"</span>, <span class="s">"severe"</span>])},
+        timing={<span class="s">"max_cycles"</span>: 1200},            <span class="c"># fail loudly if a state would ever be slow</span>
+    )
+    worst = max(r.nouls[k].noul <span class="k">for</span> k <span class="k">in</span> HAZARDS)
+    <span class="k">if</span> worst &gt; 0.9 <span class="k">and</span> r.scores[<span class="s">"severity"</span>].score &gt;= 2: <span class="k">return</span> <span class="s">"block"</span>
+    <span class="k">if</span> worst &gt; 0.6:                                     <span class="k">return</span> <span class="s">"review"</span>
+    <span class="k">return</span> <span class="s">"pass"</span></code></pre>
+
+<h2>2. Re-ranking 30 candidates per query in one pass</h2>
+<p>Build a BM25 shortlist, then ask one Score per query–candidate pair. On Reflex the 30 Scores are 30 slots, so each query costs one fabric pass instead of thirty calls or one long call.</p>
+<pre><code>cands = bm25.top(query, 30)
+r = client.system_zero(
+    state={<span class="s">"query"</span>: query, <span class="s">"candidates"</span>: {str(i): c.text <span class="k">for</span> i, c <span class="k">in</span> enumerate(cands)}},
+    questions={f<span class="s">"rel_{i}"</span>: Score(instructions=f<span class="s">"How well candidate {i} answers the query"</span>,
+                                 criteria=[<span class="s">"irrelevant"</span>, <span class="s">"partly"</span>, <span class="s">"answers it"</span>]) <span class="k">for</span> i <span class="k">in</span> range(30)},
+)
+ranked = sorted(range(30), key=<span class="k">lambda</span> i: -r.scores[f<span class="s">"rel_{i}"</span>].score)</code></pre>
+
+<h2>3. Hierarchical classification with beam search</h2>
+<p>Classify documents through a deep taxonomy. Each level is one Choice; fan the top-k children of each beam into the next request. Because every level is a fixed cycle count, a five-level taxonomy has a five-pass worst case you can state in microseconds.</p>
+<pre><code><span class="k">def</span> classify(doc, node, beam=3, depth=0):
+    <span class="k">if</span> <span class="k">not</span> node.children: <span class="k">return</span> [(node, 1.0)]
+    r = client.system_zero(state=doc, questions={<span class="s">"c"</span>: Choice(
+            instructions=f<span class="s">"Which {node.name} sub-category fits best"</span>,
+            criteria={c.id: c.description <span class="k">for</span> c <span class="k">in</span> node.children})})
+    probs = r.choices[<span class="s">"c"</span>].probabilities
+    out = []
+    <span class="k">for</span> cid, p <span class="k">in</span> sorted(probs.items(), key=<span class="k">lambda</span> kv: -kv[1])[:beam]:
+        out += [(leaf, p * q) <span class="k">for</span> leaf, q <span class="k">in</span> classify(doc, node.child(cid), beam, depth + 1)]
+    <span class="k">return</span> sorted(out, key=<span class="k">lambda</span> t: -t[1])[:beam]</code></pre>
+
+<h2>4. Twitch chat filter with a hard tick</h2>
+<p>Every message gets one request with several questions: insult, spam, spoiler, question. A game loop at 60 fps has a 16.6 ms frame. Read the worst-case cycle count for a 256-token window from the bitstream info, convert at the closed clock, and assert it fits the fraction of the frame you are willing to give moderation; if it does, the filter runs inside the frame for as many messages as that fraction allows.</p>
+<pre><code>budget_ns = 16_600_000 / 1000     <span class="c"># leave 0.1% of a frame for moderation</span>
+<span class="k">assert</span> client.bitstream_info().worst_case_cycles_for(256) * 4 &lt; budget_ns   <span class="c"># 4 ns/cycle at 250 MHz</span></code></pre>
+
+<h2>5. Date extraction with confidence-based review</h2>
+<p>Ask Reflex for the parts named in a document (day, month, year, relative anchor) as Choices, resolve and validate in code, and send only low-confidence fields for review. The extraction is now cheaper than the regex pre-pass that precedes it.</p>
+
+<h2>6. Simple memory system</h2>
+<p>Let Reflex decide which exchanges are worth remembering (a Noul per exchange) and wrap the call in a function that prepends memories to later states. With Pulse in stream mode the same idea works on a live transcript: a memory-worthiness probability per 5-second window.</p>
+<div class="next">
+  <a href="#examples-hardware">Hardware projects<span>The same questions, on a pin.</span></a>
+  <a href="#patterns">Patterns<span>Windowed state, latency budgeting, act-then-explain.</span></a>
+</div>
+
+<h2 class="part" id="examples-hardware">Hardware projects <span class="pill hw">hardware</span></h2>
+
+<h3>1. Icicle Kit: ticket router on a RISC-V</h3>
+<p>PolarFire SoC MPFS250T, Libero SoC 2025.x, Linux on the MSS. This builds the quick-start questions into the fabric and calls them from C.</p>
+<pre><code><span class="c"># host</span>
+pip install "reflex-sdk[fabric]"
+reflex init --target mpfs250t --name support-router
+<span class="c"># edit reflex.toml: paste the department / frustration / is_urgent questions (see Configuration)</span>
+reflex check
+<span class="c">#   illustrative output — real figures come from your toolchain:</span>
+<span class="c">#   slots 3/64 · LEs used/254,000 · math used/784 · LSRAM used/812 · worst case N cycles @ 250 MHz</span>
+reflex synth            <span class="c"># ~70 min on a workstation; Libero runs headless</span>
+reflex flash --jtag     <span class="c"># or: reflex flash --via-mss over the board's USB-UART</span></code></pre>
+<pre><code><span class="c">/* on the MSS, after the Linux driver creates /dev/reflex0 */</span>
+<span class="k">#include</span> <span class="s">"reflex.h"</span>
+<span class="k">#include</span> &lt;stdio.h&gt;
+
+<span class="k">int</span> main(<span class="k">void</span>) {
+    reflex_core_t core;
+    <span class="k">if</span> (rfx_open(&amp;core, RFX_CORE0_BASE)) <span class="k">return</span> 1;
+    rfx_slots_t s = rfx_slots_from_toml(&amp;core);      <span class="c">/* s.department, s.frustration, s.is_urgent */</span>
+
+    <span class="k">char</span> line[2048];
+    <span class="k">while</span> (fgets(line, <span class="k">sizeof</span> line, stdin)) {
+        rfx_push_state(&amp;core, line, strlen(line));
+        rfx_wait_done(&amp;core);
+        rfx_choice_t d = rfx_read_choice(&amp;core, s.department);
+        printf(<span class="s">"%-10s urgent=%.2f cycles=%u\n"</span>, d.label,
+               rfx_q15_to_f(rfx_read_noul(&amp;core, s.is_urgent)), rfx_read_cycles(&amp;core));
+    }
+}</code></pre>
+
+<h3>2. Gate on a GPIO: an emergency-stop listener</h3>
+<p>A microphone's PCM stream enters on AXI4-Stream, a Pulse detects speech, a Gate listens for "stop", and the Gate's pin feeds a relay driver with no processor in the loop. The MSS only logs.</p>
+<pre><code>[io]
+state_in = <span class="s">"axis:s_axis_pcm"</span>
+
+[questions.speech]
+type = <span class="s">"pulse"</span>
+instructions = <span class="s">"This window contains human speech"</span>
+window = { bytes = 640, stride = 320 }
+
+[questions.stop]
+type = <span class="s">"gate"</span>
+instructions = <span class="s">"The operator said stop, halt, or emergency"</span>
+threshold = 0.85
+hysteresis = 0.10
+output = <span class="s">"gpio:PB4"</span>       <span class="c"># fabric pin → relay driver</span></code></pre>
+<pre class="timeline"># illustrative sequence; offsets come from the cycle model, not a measurement
+t=0        last byte of window N enters s_axis_pcm
+t=+71 cyc  window N speech probability and stop probability latched
+t=+72 cyc  PB4 asserted (if stop ≥ 0.85)         →  288 ns after the audio arrived, at 250 MHz
+t=+73 cyc  IRQ 2 raised; MSS reads SLOT[stop], logs asserted_at_cycle</pre>
+<p class="note clock"><b>Safety note</b>A Gate is a classifier output, not a certified safety function. Put it in parallel with, never instead of, a hard-wired stop. The act-then-explain pattern exists so the fabric acts fast and the processor can veto; design the veto path first.</p>
+
+<h3>3. Integrating a Reflex core into your own RTL</h3>
+<p><code>reflex synth --ip</code> emits the core as a packaged IP block with standard AXI interfaces, so it drops into SmartDesign or an IP Integrator block design next to your own logic.</p>
+<pre><code><span class="c">// Verilog: instantiate the generated core and feed it from a packet parser</span>
+reflex_core #(.SLOTS(16), .STATE_TOKENS(1024)) u_reflex (
+    .aclk            (clk_250),
+    .aresetn         (rstn),
+    <span class="c">// state in (AXI4-Stream, 8-bit)</span>
+    .s_axis_tdata    (pkt_payload_byte),
+    .s_axis_tvalid   (pkt_payload_valid),
+    .s_axis_tready   (pkt_payload_ready),
+    .s_axis_tlast    (pkt_payload_last),     <span class="c">// marks end of state</span>
+    <span class="c">// results (AXI4-Lite)</span>
+    .s_axil_awaddr   (axil_awaddr), .s_axil_awvalid(axil_awvalid), .s_axil_awready(axil_awready),
+    .s_axil_wdata    (axil_wdata),  .s_axil_wvalid (axil_wvalid),  .s_axil_wready (axil_wready),
+    .s_axil_araddr   (axil_araddr), .s_axil_arvalid(axil_arvalid), .s_axil_arready(axil_arready),
+    .s_axil_rdata    (axil_rdata),  .s_axil_rvalid (axil_rvalid),  .s_axil_rready (axil_rready),
+    <span class="c">// optional result stream: one packet per request</span>
+    .m_axis_tdata    (res_tdata), .m_axis_tvalid(res_tvalid), .m_axis_tready(res_tready), .m_axis_tlast(res_tlast),
+    <span class="c">// gates and status</span>
+    .gate_out        (gate_pins),            <span class="c">// [SLOTS-1:0], one bit per Gate slot</span>
+    .irq             (rfx_irq),
+    .cycles          (rfx_cycles)            <span class="c">// [31:0], valid with irq</span>
+);</code></pre>
+
+<h3>4. HLS wrapper for a packet classifier</h3>
+<p>If your pipeline is in C++ HLS, treat the core as a stream function. The pragmas below are what keep your side at II = 1 so the core is never starved.</p>
+<pre><code><span class="k">#include</span> <span class="s">"reflex_hls.h"</span>
+<span class="k">#include</span> &lt;hls_stream.h&gt;
+
+<span class="k">void</span> classify_packets(hls::stream&lt;axis8_t&gt; &amp;pkt_in,
+                      hls::stream&lt;rfx_result_t&gt; &amp;res_out,
+                      ap_uint&lt;16&gt; &amp;gate_bits) {
+<span class="k">#pragma</span> HLS INTERFACE axis port=pkt_in
+<span class="k">#pragma</span> HLS INTERFACE axis port=res_out
+<span class="k">#pragma</span> HLS INTERFACE ap_none port=gate_bits
+<span class="k">#pragma</span> HLS DATAFLOW
+    hls::stream&lt;axis8_t&gt; payload;
+<span class="k">#pragma</span> HLS STREAM variable=payload depth=64
+    strip_headers(pkt_in, payload);              <span class="c">// your logic, PIPELINE II=1 inside</span>
+    reflex_core&lt;16, 1024&gt;(payload, res_out, gate_bits);   <span class="c">// generated; closes at II=1</span>
+}</code></pre>
+
+<h3>5. Partial reconfiguration: swap a question live</h3>
+<pre><code>reflex synth --pr-only slot=7      <span class="c"># rebuild one slot partition: a Choice becomes a Score</span>
+reflex flash --pr slot=7           <span class="c"># ~40 ms; other slots keep answering, Gates keep driving</span></code></pre>
+<p>During the swap the core reports <code>RFX_E_TIMING</code> for any request that touches slot 7 and serves everything else normally.</p>
+
+<h3>6. PCIe host card (no on-board processor)</h3>
+<p>On MPF500T or Alveo, the core sits behind a PCIe endpoint with a DMA engine. The host driver maps the same register file, so the Python <code>BoardClient</code> and the C SDK work unchanged; the only difference is that <code>Reflex-Host-Latency-us</code> becomes a number you measure yourself with <code>reflex bench</code>.</p>
+<div class="next">
+  <a href="#sdk-c">C SDK<span>Register map and function reference.</span></a>
+  <a href="#targets">Fabric targets<span>What fits on which part.</span></a>
+  <a href="#configuration">Configuration<span>reflex.toml in full.</span></a>
+</div>
+</article>
+
+<article id="roadmap">
+<p class="eyebrow">Build it yourself</p>
+
+<h1>Project status</h1>
+<div class="tw"><table>
+<tr><th>Component</th><th>Status</th><th>Where</th></tr>
+<tr><td>Request / response schema</td><td><span class="pill sw">specified</span></td><td><a href="#api">API reference</a></td></tr>
+<tr><td>Confidence formulas, fixed-point</td><td><span class="pill sw">runnable</span></td><td><a href="#toolkit">M0 emulator</a> (Python)</td></tr>
+<tr><td>Cycle model (tokenise + encoder + heads)</td><td><span class="pill sw">runnable, constants are estimates</span></td><td><a href="#toolkit">M0 emulator</a></td></tr>
+<tr><td>Software emulator with real answers</td><td><span class="pill sw">runnable</span></td><td><a href="#toolkit">M0 emulator</a> (stand-in model, not Reflex weights)</td></tr>
+<tr><td>One Noul head synthesised to RTL</td><td><span class="pill hw">reproducible recipe</span></td><td><a href="#head-export">M1</a> via QKeras + hls4ml</td></tr>
+<tr><td>Quantised encoder in fabric</td><td><span class="pill">target</span></td><td><a href="#milestones">M2</a></td></tr>
+<tr><td>Slot bank, result file, Gate pins, PR partitions</td><td><span class="pill">target</span></td><td><a href="#milestones">M3</a></td></tr>
+<tr><td>Trained Reflex weights (calibrated, quantisation-aware)</td><td><span class="pill">target</span></td><td><a href="#milestones">M2</a>; the largest open item</td></tr>
+<tr><td><code>reflex</code> CLI (<code>init</code>, <code>check</code>, <code>synth</code>, <code>flash</code>, <code>bench</code>)</td><td><span class="pill">specified</span></td><td><a href="#configuration">Configuration</a></td></tr>
+<tr><td>Hosted API at <code>api.reflex.dev</code></td><td><span class="pill">target</span></td><td>No service runs there</td></tr>
+</table></div>
+<h2>What "target" means here</h2>
+<p>A target figure is derived from one of two things: the architecture (a pipelined encoder at II = 1 accepts one token per cycle by construction) or the device data sheet (an MPFS250T has 784 math blocks). Where a constant is a plain guess, such as the 96-cycle encoder drain, the page says so. None of them are measurements of Reflex, because Reflex has not been measured.</p>
+<h2>What you can trust today</h2>
+<ul>
+<li>The request shape: <code>state</code> plus named typed questions, so the <a href="#so-compat">drop-in</a> lets existing decision-model client code run against the emulator unchanged.</li>
+<li>The confidence formulas: documented on the <a href="#confidence">Confidence</a> page and implemented in the emulator with the fixed-point format a head would use.</li>
+<li>The FPGA facts: everything in the <a href="#fpga-primer">primer</a> is sourced.</li>
+<li>The M1 recipe: QKeras and hls4ml are real, open tools that produce real RTL from a small head, and the same workflow is used for inline inference in production.</li>
+</ul>
+
+<h2 class="part" id="milestones">Milestones</h2>
+<p class="sublede">Each milestone has a pass condition you can check yourself. Finish one before starting the next.</p>
+
+<h3>M0: Software emulator <span class="pill sw">runnable</span></h3>
+<p><strong>Goal.</strong> Implement the full Reflex request shape in Python with real (if modest) answers and a modelled cycle count, so every downstream tool, test and SDK can be written against something that runs.</p>
+<p><strong>Pass condition.</strong> The quick-start ticket request returns a Choice, Score and Noul with calibrated probabilities and confidence, and the same request returns the same <code>timing.cycles</code> every time.</p>
+<p><strong>What it proves.</strong> The schema, the composition patterns and the cycle model. <strong>What it does not prove:</strong> accuracy or latency of anything in silicon.</p>
+
+<h3>M1: One Noul head in fabric <span class="pill hw">reproducible recipe</span></h3>
+<p><strong>Goal.</strong> Train a tiny quantised head on frozen context vectors from the M0 model, export it with hls4ml, synthesise to RTL, and read its latency and resource use from the tool report.</p>
+<p><strong>Pass condition.</strong> Vitis HLS or Libero reports II = 1 and a fixed latency for the head; the C-simulation output matches the Python head on 1,000 held-out examples to within fixed-point rounding.</p>
+<p><strong>What it proves.</strong> The slot concept costs what the architecture page claims, within a factor of two. It replaces the "~640 LEs, 2 math blocks" estimate with a number.</p>
+
+<h3>M2: Quantised encoder in fabric <span class="pill">target</span></h3>
+<p><strong>Goal.</strong> Replace the stand-in encoder with a small transformer (2–4 layers, 128–256 wide) trained quantisation-aware with calibrated-decision heads, and map it onto the math-block systolic array.</p>
+<p><strong>Pass condition.</strong> A 256-token state passes through the encoder at II = 1 with a fixed latency on a real board, and the heads' answers on a labelled set are within a stated margin of the floating-point model.</p>
+<p><strong>Why this is the hard one.</strong> Attention over the full buffer at II = 1 is quadratic in tokens; the fit on a mid-range part depends on sequence length, width and the quantisation scheme. This milestone is where the 4k-token figure on the State page gets replaced by whatever actually closes timing. Budget months, not weeks.</p>
+
+<h3>M3: Slot bank, result file, Gate <span class="pill">target</span></h3>
+<p><strong>Goal.</strong> N heads reading one broadcast context vector, the AXI4-Lite register file from the C SDK page, Gate threshold logic driving a fabric pin, and partial-reconfiguration partitions per slot.</p>
+<p><strong>Pass condition.</strong> Adding a slot does not change <code>CYCLES</code>; a Gate asserts a pin a fixed number of cycles after the last state byte; swapping one slot's partition does not interrupt the others.</p>
+<p><strong>What it proves.</strong> The headline claim: questions are circuits, not time.</p>
+
+<h3>Only then</h3>
+<p>Only after M2 and M3 is there a number to compare against a server-side decision model, and the <a href="#benchmark">benchmark method</a> page says how to produce it so the comparison is fair.</p>
+</article>
+
+<article id="toolkit">
+<p class="eyebrow">Build it yourself</p>
+
+<h1>M0: Software emulator <span class="pill sw">runnable</span></h1>
+<p class="lede">A single Python file that implements the Reflex request shape, the confidence formulas in Q1.15, and the cycle model. Answers come from a small open sentence-embedding model standing in for Reflex's untrained encoder.</p>
+
+<p class="note"><b>What the stand-in model is</b>The emulator embeds the state and each criterion with <code>all-MiniLM-L6-v2</code> (22M parameters, open, CPU-fast) and turns cosine similarities into a probability distribution. It is a crude judge. It is here so the <em>plumbing</em> is real; replace <code>Encoder</code> with your own model when you have one.</p>
+
+<pre><code>pip install sentence-transformers numpy</code></pre>
+<pre class="pre-label">reflex_emu.py</pre>
+<pre><code><span class="k">from</span> __future__ <span class="k">import</span> annotations
+<span class="k">import</span> json, math
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
+<span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer
+
+<span class="c"># ---------- fixed point: Q1.15, the format a fabric head would write ----------</span>
+Q = 1 &lt;&lt; 15
+<span class="k">def</span> q15(x: float) -&gt; int: <span class="k">return</span> int(round(max(-1.0, min(1.0, x)) * Q))
+<span class="k">def</span> fq15(x: int) -&gt; float: <span class="k">return</span> x / Q
+
+<span class="c"># ---------- confidence formulas ----------</span>
+<span class="k">def</span> choice_conf(p: list[float]) -&gt; float:
+    n = len(p); <span class="k">return</span> 0.0 <span class="k">if</span> n == 1 <span class="k">else</span> (max(p) - 1 / n) / (1 - 1 / n)
+
+<span class="k">def</span> score_conf(p: list[float]) -&gt; float:
+    n = len(p); m = int(np.argmax(p))
+    spread = sum(pi * abs(i - m) <span class="k">for</span> i, pi <span class="k">in</span> enumerate(p))
+    even = sum(abs(i - (n - 1) / 2) <span class="k">for</span> i <span class="k">in</span> range(n)) / n
+    <span class="k">return</span> max(0.0, 1 - spread / even) <span class="k">if</span> even &gt; 0 <span class="k">else</span> 1.0
+
+<span class="c"># ---------- cycle model: constants are ESTIMATES until M2 replaces them ----------</span>
+@dataclass
+<span class="k">class</span> CycleModel:
+    clock_mhz: int = 250
+    load: int = 64         <span class="c"># tokenise + buffer fill</span>
+    per_token: int = 1     <span class="c"># encoder at II = 1</span>
+    drain: int = 96        <span class="c"># pipeline depth of the encoder stack</span>
+    heads: int = 28        <span class="c"># all slots, in parallel</span>
+    <span class="k">def</span> cycles(self, tokens: int) -&gt; int:
+        <span class="k">return</span> self.load + self.per_token * tokens + self.drain + self.heads
+
+<span class="c"># ---------- stand-in encoder ----------</span>
+<span class="k">class</span> Encoder:
+    <span class="k">def</span> __init__(self, name=<span class="s">"sentence-transformers/all-MiniLM-L6-v2"</span>):
+        self.m = SentenceTransformer(name)
+    <span class="k">def</span> tokens(self, text: str) -&gt; int:
+        <span class="k">return</span> len(self.m.tokenizer(text)[<span class="s">"input_ids"</span>])
+    <span class="k">def</span> embed(self, texts: list[str]) -&gt; np.ndarray:
+        <span class="k">return</span> self.m.encode(texts, normalize_embeddings=True)
+
+<span class="k">def</span> softmax(x, t=0.05):
+    z = np.exp((np.asarray(x) - np.max(x)) / t); <span class="k">return</span> (z / z.sum()).tolist()
+
+<span class="k">def</span> flatten_state(state) -&gt; str:
+    <span class="k">if</span> isinstance(state, str): <span class="k">return</span> state
+    <span class="k">return</span> json.dumps(state, ensure_ascii=False)   <span class="c"># canonical, same as the SDK does</span>
+
+<span class="c"># ---------- the core ----------</span>
+<span class="k">class</span> ReflexEmulator:
+    <span class="k">def</span> __init__(self, slots=64, state_tokens=2048, cycle_model=CycleModel()):
+        self.enc, self.slots, self.state_tokens, self.cm = Encoder(), slots, state_tokens, cycle_model
+
+    <span class="k">def</span> system_zero(self, state, questions: dict) -&gt; dict:
+        <span class="k">if</span> len(questions) &gt; self.slots: <span class="k">raise</span> ValueError(f<span class="s">"NoSlots: {len(questions)} &gt; {self.slots}"</span>)
+        text = flatten_state(state)
+        ntok = self.enc.tokens(text)
+        <span class="k">if</span> ntok &gt; self.state_tokens: <span class="k">raise</span> ValueError(f<span class="s">"StateTooLarge: {ntok} &gt; {self.state_tokens}"</span>)
+        s = self.enc.embed([text])[0]
+        answers = {name: self._head(s, q) <span class="k">for</span> name, q <span class="k">in</span> questions.items()}
+        cyc = self.cm.cycles(ntok)
+        <span class="k">return</span> {<span class="s">"model"</span>: <span class="s">"reflex-emu-0.1"</span>, <span class="s">"answers"</span>: answers,
+                <span class="s">"timing"</span>: {<span class="s">"cycles"</span>: cyc, <span class="s">"clock_mhz"</span>: self.cm.clock_mhz,
+                           <span class="s">"latency_ns"</span>: round(cyc * 1000 / self.cm.clock_mhz),
+                           <span class="s">"deterministic"</span>: True, <span class="s">"bitstream"</span>: <span class="s">"emulator"</span>},
+                <span class="s">"usage"</span>: {<span class="s">"input_tokens"</span>: ntok, <span class="s">"slots_used"</span>: len(questions)}}
+
+    <span class="k">def</span> _head(self, s, q):
+        t = q[<span class="s">"type"</span>]; ins = q.get(<span class="s">"instructions"</span>, <span class="s">""</span>)
+        <span class="k">if</span> t == <span class="s">"choice"</span>:
+            names = list(q[<span class="s">"criteria"</span>])
+            E = self.enc.embed([f<span class="s">"{ins}: {names[i]}. {q['criteria'][names[i]] or ''}"</span> <span class="k">for</span> i <span class="k">in</span> range(len(names))])
+            p = [fq15(q15(x)) <span class="k">for</span> x <span class="k">in</span> softmax(E @ s)]
+            <span class="k">return</span> {<span class="s">"type"</span>: t, <span class="s">"choice"</span>: names[int(np.argmax(p))],
+                    <span class="s">"confidence"</span>: fq15(q15(choice_conf(p))), <span class="s">"probabilities"</span>: dict(zip(names, p))}
+        <span class="k">if</span> t == <span class="s">"score"</span>:
+            lv = q[<span class="s">"criteria"</span>]
+            E = self.enc.embed([f<span class="s">"{ins}: {l}"</span> <span class="k">for</span> l <span class="k">in</span> lv])
+            p = [fq15(q15(x)) <span class="k">for</span> x <span class="k">in</span> softmax(E @ s)]
+            <span class="k">return</span> {<span class="s">"type"</span>: t, <span class="s">"score"</span>: round(sum(i * pi <span class="k">for</span> i, pi <span class="k">in</span> enumerate(p)), 4),
+                    <span class="s">"confidence"</span>: fq15(q15(score_conf(p))),
+                    <span class="s">"legend"</span>: {str(i): l <span class="k">for</span> i, l <span class="k">in</span> enumerate(lv)},
+                    <span class="s">"probabilities"</span>: {str(i): pi <span class="k">for</span> i, pi <span class="k">in</span> enumerate(p)}}
+        <span class="k">if</span> t <span class="k">in</span> (<span class="s">"noul"</span>, <span class="s">"gate"</span>):
+            c = q.get(<span class="s">"criteria"</span>) <span class="k">or</span> {}
+            yes = c.get(<span class="s">"true"</span>) <span class="k">or</span> ins
+            no  = c.get(<span class="s">"false"</span>) <span class="k">or</span> f<span class="s">"not the case that {ins}"</span>
+            E = self.enc.embed([yes, no])
+            p = fq15(q15(softmax(E @ s)[0]))
+            <span class="k">if</span> t == <span class="s">"noul"</span>: <span class="k">return</span> {<span class="s">"type"</span>: t, <span class="s">"noul"</span>: p}
+            g = int(p &gt;= q[<span class="s">"threshold"</span>])
+            <span class="k">return</span> {<span class="s">"type"</span>: t, <span class="s">"gate"</span>: g, <span class="s">"noul"</span>: p,
+                    <span class="s">"asserted_at_cycle"</span>: (self.cm.load + self.cm.drain + self.cm.heads) <span class="k">if</span> g <span class="k">else</span> None}
+        <span class="k">raise</span> ValueError(f<span class="s">"unsupported type {t} in M0"</span>)
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    emu = ReflexEmulator()
+    ticket = <span class="s">"Our API integration started returning 500 errors on every request about 20 minutes ago, and we can't process any customer orders until this is fixed."</span>
+    r = emu.system_zero(ticket, {
+        <span class="s">"department"</span>: {<span class="s">"type"</span>: <span class="s">"choice"</span>, <span class="s">"instructions"</span>: <span class="s">"Which team should handle this"</span>,
+                       <span class="s">"criteria"</span>: {<span class="s">"billing"</span>: <span class="s">"Payment or subscription issues"</span>,
+                                    <span class="s">"technical"</span>: <span class="s">"Bugs or integration problems"</span>,
+                                    <span class="s">"sales"</span>: <span class="s">"Pricing or account questions"</span>}},
+        <span class="s">"frustration"</span>: {<span class="s">"type"</span>: <span class="s">"score"</span>, <span class="s">"instructions"</span>: <span class="s">"How frustrated the customer appears"</span>,
+                        <span class="s">"criteria"</span>: [<span class="s">"Calm, just stating facts"</span>, <span class="s">"Frustrated but civil"</span>, <span class="s">"Very angry, strong language"</span>]},
+        <span class="s">"is_urgent"</span>: {<span class="s">"type"</span>: <span class="s">"noul"</span>, <span class="s">"instructions"</span>: <span class="s">"The message conveys urgency or time-sensitivity"</span>},
+    })
+    print(json.dumps(r, indent=2))</code></pre>
+
+<h2>What to do with it</h2>
+<ul>
+<li><strong>Write the SDKs against it.</strong> Point <code>ReflexClient(base_url=…)</code> at a 30-line FastAPI wrapper around <code>system_zero</code> and the Python and TypeScript SDK pages become real.</li>
+<li><strong>Collect training data through it.</strong> Log every request and answer; when you train real heads (M1) you want exactly this shape.</li>
+<li><strong>Replace the constants.</strong> <code>CycleModel</code> is the one place estimates live. M1 and M2 each overwrite a field with a measurement.</li>
+<li><strong>Calibrate the stand-in.</strong> The softmax temperature (0.05) is a guess. Fit it on a labelled set with a reliability diagram before you trust any confidence threshold, and expect to throw the stand-in away at M2.</li>
+</ul>
+<p class="note clock"><b>Known limits of the stand-in</b>Cosine similarity over sentence embeddings ignores instructions beyond the words in them, does not reason about negation well, and treats a Score's levels as unordered labels. It will get the quick-start ticket right and will get subtle rubrics wrong. That is fine for M0, whose job is plumbing.</p>
+
+<h2 class="part" id="head-export">M1: One head in fabric <span class="pill hw">reproducible recipe</span></h2>
+<p class="sublede">Train a small quantised Noul head on frozen context vectors, export it to RTL with hls4ml, and read latency and resources from the synthesis report. The recipe runs on a laptop up to the synthesis step.</p>
+<pre><code>pip install qkeras hls4ml tensorflow sentence-transformers scikit-learn</code></pre>
+
+<h3>1. Make a dataset of (context vector, label)</h3>
+<pre><code><span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">from</span> reflex_emu <span class="k">import</span> Encoder
+enc = Encoder()
+texts, labels = load_your_labelled_set()        <span class="c"># e.g. 5k support tickets, label = is_urgent ∈ {0,1}</span>
+X = enc.embed(texts).astype(<span class="s">"float32"</span>)         <span class="c"># 384-d, L2-normalised: the "context vector" a slot reads</span>
+y = np.asarray(labels, dtype=<span class="s">"float32"</span>)
+np.savez(<span class="s">"urgent.npz"</span>, X=X, y=y)</code></pre>
+
+<h3>2. Train a quantised head with QKeras</h3>
+<pre><code><span class="k">from</span> qkeras <span class="k">import</span> QDense, QActivation, quantized_bits, quantized_relu
+<span class="k">from</span> tensorflow.keras <span class="k">import</span> Sequential, Input
+
+head = Sequential([
+    Input((384,)),
+    QDense(32, kernel_quantizer=quantized_bits(8, 0, alpha=1), bias_quantizer=quantized_bits(8, 0, alpha=1)),
+    QActivation(quantized_relu(8)),
+    QDense(1,  kernel_quantizer=quantized_bits(8, 0, alpha=1), bias_quantizer=quantized_bits(8, 0, alpha=1)),
+    QActivation(<span class="s">"sigmoid"</span>),
+])
+head.compile(optimizer=<span class="s">"adam"</span>, loss=<span class="s">"binary_crossentropy"</span>, metrics=[<span class="s">"AUC"</span>])
+head.fit(X, y, epochs=30, batch_size=256, validation_split=0.2)
+head.save(<span class="s">"noul_head.h5"</span>)</code></pre>
+<p>Thirty-two hidden units and INT8 is the smallest head that keeps AUC on a typical ticket set; it is also roughly the "2 math blocks" slot the architecture page estimates. Shrink or grow it and watch the synthesis report, which is the whole point of this milestone.</p>
+
+<h3>3. Export to RTL with hls4ml</h3>
+<pre><code><span class="k">import</span> hls4ml
+cfg = hls4ml.utils.config_from_keras_model(head, granularity=<span class="s">"name"</span>)
+cfg[<span class="s">"Model"</span>][<span class="s">"Precision"</span>] = <span class="s">"ap_fixed&lt;16,6&gt;"</span>
+cfg[<span class="s">"Model"</span>][<span class="s">"ReuseFactor"</span>] = 1            <span class="c"># fully parallel → II = 1, maximum resources</span>
+cfg[<span class="s">"Model"</span>][<span class="s">"Strategy"</span>] = <span class="s">"Latency"</span>
+
+hls = hls4ml.converters.convert_from_keras_model(
+    head, hls_config=cfg, output_dir=<span class="s">"hls_noul_head"</span>,
+    backend=<span class="s">"Vitis"</span>, part=<span class="s">"xcu55c-fsvh2892-2L-e"</span>,   <span class="c"># Alveo U55C; swap for your part</span>
+    io_type=<span class="s">"io_parallel"</span>, clock_period=4)         <span class="c"># 4 ns = 250 MHz</span>
+hls.compile()                                      <span class="c"># C simulation</span>
+y_hls = hls.predict(X[:1000])                      <span class="c"># compare with head.predict: the pass condition</span>
+hls.build(csim=False, synth=True, vsynth=True)     <span class="c"># needs Vitis HLS installed; ~10–30 min</span>
+hls4ml.report.read_vivado_report(<span class="s">"hls_noul_head"</span>)</code></pre>
+<p>For Microchip targets, export with <code>backend="Vivado"</code> for the RTL and import the generated Verilog into Libero as a SmartDesign component; hls4ml does not drive Libero directly. The report prints <strong>Latency (cycles)</strong>, <strong>Interval</strong>, and <strong>LUT / FF / DSP / BRAM</strong> counts.</p>
+
+<h3>4. What to record</h3>
+<div class="tw"><table>
+<tr><th>Field</th><th>Replaces</th><th>In</th></tr>
+<tr><td>Interval</td><td>the claim that heads run at II = 1</td><td><a href="#architecture">Architecture</a></td></tr>
+<tr><td>Latency (cycles)</td><td><code>CycleModel.heads = 28</code></td><td><a href="#toolkit">M0 emulator</a></td></tr>
+<tr><td>LUT, DSP</td><td>"~640 LEs, 2 math blocks" for a Noul slot</td><td><a href="#architecture">Architecture</a> slot table</td></tr>
+<tr><td>max |y_hls − y_keras|</td><td>the Q1.15 rounding claim on the Confidence page</td><td><a href="#confidence">Confidence &amp; timing</a></td></tr>
+</table></div>
+<p>Publish the numbers with the exact part, tool version and <code>ReuseFactor</code>. A head that does not close at II = 1 on your part is still a result; it tells M2 what budget it has.</p>
+
+<h3>Extending to Choice and Score</h3>
+<p>A Choice head is the same network with <em>n</em> sigmoid outputs replaced by an <em>n</em>-way softmax; hls4ml supports <code>Softmax</code> with a lookup-table implementation. A Score head is a Choice head over the levels followed by the expected-value and MAD arithmetic, which is ~40 lines of fixed-point C++ you add to the generated project. The confidence formulas in <code>reflex_emu.py</code> are the reference for that C++.</p>
+
+<h2 class="part" id="so-compat">Drop-in for existing clients</h2>
+<p class="sublede">Run existing decision-model client code (state in, typed questions, answers by name) against the Reflex emulator or a Reflex board by swapping an import.</p>
+<pre class="pre-label">reflex_compat.py</pre>
+<pre><code><span class="c"># Drop-in for a client SDK that exposes `DecisionClient, Choice, Score, Noul`</span>
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, asdict
+<span class="k">from</span> types <span class="k">import</span> SimpleNamespace
+<span class="k">from</span> reflex_emu <span class="k">import</span> ReflexEmulator
+
+@dataclass
+<span class="k">class</span> Choice: instructions: str = <span class="s">""</span>; criteria: dict = None
+@dataclass
+<span class="k">class</span> Score:  instructions: str = <span class="s">""</span>; criteria: list = None
+@dataclass
+<span class="k">class</span> Noul:   instructions: str = <span class="s">""</span>; criteria: dict = None
+
+<span class="k">def</span> _q(x):
+    d = {k: v <span class="k">for</span> k, v <span class="k">in</span> asdict(x).items() <span class="k">if</span> v <span class="k">is not</span> None}
+    d[<span class="s">"type"</span>] = type(x).__name__.lower(); <span class="k">return</span> d
+
+<span class="k">class</span> DecisionClient:
+    <span class="k">def</span> __init__(self, model=<span class="s">"reflex-emu"</span>, backend=None): self.b = backend <span class="k">or</span> ReflexEmulator()
+    <span class="k">def</span> __enter__(self): <span class="k">return</span> self
+    <span class="k">def</span> __exit__(self, *a): <span class="k">pass</span>
+    <span class="k">def</span> system_one(self, state, questions):
+        r = self.b.system_zero(state, {k: _q(v) <span class="k">for</span> k, v <span class="k">in</span> questions.items()})
+        ns = <span class="k">lambda</span> d: SimpleNamespace(**d)
+        A = {k: ns(v) <span class="k">for</span> k, v <span class="k">in</span> r[<span class="s">"answers"</span>].items()}
+        <span class="k">return</span> SimpleNamespace(
+            model=r[<span class="s">"model"</span>], answers=A, timing=ns(r[<span class="s">"timing"</span>]), usage=ns(r[<span class="s">"usage"</span>]),
+            choices={k: v <span class="k">for</span> k, v <span class="k">in</span> A.items() <span class="k">if</span> v.type == <span class="s">"choice"</span>},
+            scores ={k: v <span class="k">for</span> k, v <span class="k">in</span> A.items() <span class="k">if</span> v.type == <span class="s">"score"</span>},
+            nouls  ={k: v <span class="k">for</span> k, v <span class="k">in</span> A.items() <span class="k">if</span> v.type == <span class="s">"noul"</span>})</code></pre>
+<pre><code><span class="c"># in existing client code, change one line:</span>
+<span class="c"># from your_decision_sdk import Choice, Noul, Score, DecisionClient</span>
+<span class="k">from</span> reflex_compat <span class="k">import</span> Choice, Noul, Score, DecisionClient
+<span class="c"># ...everything else runs unchanged, and response.timing.cycles now exists</span></code></pre>
+<h3>Why this matters for adoption</h3>
+<p>Every decision recipe you already run in software (guardrails, re-ranking, hierarchical classification, date extraction, memory) becomes a Reflex test case for free. Run them through the shim against the emulator to catch schema regressions, and later against a board to produce the accuracy half of the <a href="#benchmark">benchmark</a>.</p>
+<p>Differences the shim does not hide: Reflex has no long-context header (use <code>windowed()</code>), Box needs an image bitstream, and <code>usage</code> adds <code>slots_used</code>.</p>
+
+<h2 class="part" id="benchmark">Benchmark method</h2>
+<p class="sublede">How to compare Reflex with the server-side decision model you use today, fairly.</p>
+
+<h3>Measure your hosted service's real latency today</h3>
+<p>Whatever server-side decision model you use today is real and you can time it now. This is the only side of the comparison that currently produces a measurement. The code uses a placeholder client; substitute the SDK you use.</p>
+<pre><code><span class="k">import</span> time, statistics, os
+<span class="k">from</span> your_decision_sdk <span class="k">import</span> Choice, Noul, Score, DecisionClient   <span class="c"># whichever hosted SDK you use</span>
+
+qs = {...}   <span class="c"># the quick-start questions</span>
+lat = []
+<span class="k">with</span> DecisionClient(model=<span class="s">"&lt;pinned version id&gt;"</span>) <span class="k">as</span> c:   <span class="c"># pin the version; aliases move</span>
+    <span class="k">for</span> _ <span class="k">in</span> range(10): c.system_one(state=ticket, questions=qs)   <span class="c"># warm up</span>
+    <span class="k">for</span> _ <span class="k">in</span> range(200):
+        t0 = time.perf_counter(); c.system_one(state=ticket, questions=qs); lat.append(time.perf_counter() - t0)
+<span class="k">print</span>(<span class="s">"hosted p50/p99 ms"</span>, statistics.median(lat)*1e3, sorted(lat)[197]*1e3)</code></pre>
+<p>Record the client's location, the state's token count (from <code>usage.input_tokens</code>), the model id from the response, and the time of day. Network round trip is part of this number; say so.</p>
+
+<h3>Measure Reflex when there is something to measure</h3>
+<p>Three different numbers, not interchangeable:</p>
+<ol>
+<li><strong>Fabric cycles.</strong> From the <code>CYCLES</code> register or the HLS report. Multiply by the closed clock period. This is the number Reflex's design is about.</li>
+<li><strong>Board round trip.</strong> From the processor's point of view: push state, wait for done, read answers. Includes AXI and driver overhead. Measure with <code>reflex bench</code> or a C loop around the SDK calls.</li>
+<li><strong>Network round trip.</strong> Only exists once a hosted service exists. This is the only number that is like-for-like with the hosted measurement above.</li>
+</ol>
+<p>Until M3, the only Reflex figure is (1) for a single head from M1, and a modelled total from the emulator. A modelled number is not a measurement and must be labelled as a model.</p>
+
+<h3>Comparing fairly</h3>
+<ul>
+<li>Same questions, same state, same token count on both sides.</li>
+<li>Compare like with like: fabric cycles against the service's <em>server-side</em> time if it publishes one, otherwise network RTT against network RTT.</li>
+<li>Report p50, p99 and p100 for both. Reflex's whole argument is that p100 equals p50; show it rather than assert it.</li>
+<li>Report accuracy on the same labelled set alongside latency. A faster wrong answer is not a result.</li>
+<li>State the hardware: part, clock, tool versions, bitstream hash, and where the hosted client ran.</li>
+</ul>
+<p class="note ok"><b>What you can say at each milestone</b>M0: "the schema and cycle model run." M1: "one quantised head closes at II = 1 in N cycles on part P." M2: "a 256-token state is encoded in N cycles on part P at F MHz, with accuracy A on set S." M3 and a host path: "end-to-end, Reflex answers this request in X µs on the board versus the hosted service's Y ms over the network from location L." Only the last one is a speed-up claim, and it still names its own caveat.</p>
+</article>
+
+</main>
+<aside class="toc" id="toc" aria-label="On this page"></aside>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script>
+(function(){
+  var articles = document.querySelectorAll('main article');
+  function slugify(s){ return s.toLowerCase().replace(/&amp;|&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
+  articles.forEach(function(a){ a.querySelectorAll('h2, h3').forEach(function(x){ if (!x.id) x.id = a.id + '--' + slugify(x.textContent); }); });
+  var links = document.querySelectorAll('nav.rail > a');
+  var rail = document.getElementById('rail');
+  var menu = document.getElementById('menu');
+  function show(){
+    var id = decodeURIComponent((location.hash || '#introduction').slice(1));
+    var target = id ? document.getElementById(id) : null;
+    var art = target && (target.tagName === 'ARTICLE' ? target : target.closest('main article'));
+    if (!art) { art = document.getElementById('introduction'); target = art; }
+    articles.forEach(function(a){ a.classList.toggle('on', a === art); });
+    links.forEach(function(l){ l.classList.toggle('on', l.getAttribute('href') === '#' + art.id); });
+    rail.classList.remove('open'); menu.setAttribute('aria-expanded','false');
+    renderDiagrams(art);
+    if (typeof buildToc === 'function') buildToc();
+    setTimeout(function(){
+      if (target === art) { window.scrollTo(0, 0); document.body.scrollTop = 0; }
+      else target.scrollIntoView();
+    }, 0);
+  }
+  /* re-clicking the page you are on scrolls back to its top */
+  document.addEventListener('click', function(e){
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (a && a.getAttribute('href') === location.hash) show();
+  });
+  function renderDiagrams(art){
+    if (!window.mermaid) return;
+    var todo = Array.prototype.filter.call(art.querySelectorAll('pre.mermaid'), function(p){ return !p.querySelector('svg') && !p.dataset.done; });
+    if (!todo.length) return;
+    todo.forEach(function(p){ p.dataset.done = '1'; });
+    try { window.mermaid.run({ nodes: todo }).catch(function(){}); } catch(e){}
+  }
+  if (window.mermaid) {
+    var dark = (document.documentElement.dataset.theme === 'dark') || (!document.documentElement.dataset.theme && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+    window.mermaid.initialize({ startOnLoad: false, theme: dark ? 'dark' : 'neutral', fontFamily: 'Inter, system-ui, sans-serif', securityLevel: 'strict' });
+  }
+  window.addEventListener('hashchange', show);
+  menu.addEventListener('click', function(){ var o = rail.classList.toggle('open'); menu.setAttribute('aria-expanded', o ? 'true' : 'false'); });
+
+  /* --- page chrome: breadcrumbs, action row, on-this-page, filter, copy --- */
+  var toc = document.getElementById('toc');
+  var toast = document.getElementById('toast');
+  function say(msg){ toast.textContent = msg; toast.hidden = false; clearTimeout(say.t); say.t = setTimeout(function(){ toast.hidden = true; }, 1600); }
+  function copyText(t, done){
+    function fallback(){ var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy'); say(done);}catch(e){ say('Select and copy manually'); } ta.remove(); }
+    try { navigator.clipboard.writeText(t).then(function(){ say(done); }, fallback); } catch(e){ fallback(); }
+  }
+  function slug(s){ return s.toLowerCase().replace(/&amp;|&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
+  articles.forEach(function(a){
+    var eb = a.querySelector('.eyebrow'); var h1 = a.querySelector('h1');
+    var cr = document.createElement('div'); cr.className = 'crumbs';
+    cr.innerHTML = '<a href="#introduction">Docs</a><span>/</span><span>' + (eb ? eb.textContent : '') + '</span><span>/</span><span class="cur">' + h1.textContent + '</span>';
+    var head = a.querySelector('.pagehead') || h1;
+    head.parentNode.insertBefore(cr, head);
+    var act = document.createElement('div'); act.className = 'actions';
+    act.innerHTML = '<button type="button" data-act="page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy page</button>'
+      + '<button type="button" data-act="link"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>Copy link</button>';
+    var slot = a.querySelector('.after-actions');
+    if (a.id === 'introduction') { if (slot) slot.remove(); return; }
+    head.parentNode.insertBefore(act, head.nextSibling);
+    var spacer = document.createElement('div'); spacer.style.height = '18px'; act.parentNode.insertBefore(spacer, act.nextSibling);
+    act.addEventListener('click', function(e){
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.act === 'link') copyText(location.href.split('#')[0] + '#' + a.id, 'Link copied');
+      else copyText(a.innerText.replace(/Copy page\s*Copy link/, ''), 'Page copied');
+    });
+  });
+  document.querySelectorAll('[data-copy]').forEach(function(b){ b.addEventListener('click', function(){ copyText(b.dataset.copy, 'Copied'); }); });
+
+  function buildToc(){
+    var a = document.querySelector('main article.on'); if (!a) return;
+    var hs = a.querySelectorAll('h2, h3');
+    var html = '<h6>On this page</h6><a href="#' + a.id + '" data-top="1">Overview</a>';
+    hs.forEach(function(x){ html += '<a href="#' + x.id + '"' + (x.tagName === 'H3' ? ' class="sub"' : '') + '>' + head(x) + '</a>'; });
+    toc.innerHTML = html;
+    spy();
+  }
+  function spy(){
+    var a = document.querySelector('main article.on'); if (!a) return;
+    var cur = null;
+    a.querySelectorAll('h2, h3').forEach(function(x){ if (x.getBoundingClientRect().top < 120) cur = x.id; });
+    toc.querySelectorAll('a').forEach(function(l){ l.classList.toggle('on', cur ? l.getAttribute('href') === '#' + cur : !!l.dataset.top); });
+  }
+  window.addEventListener('scroll', spy, { passive: true });
+  document.body.addEventListener('scroll', spy, { passive: true });
+  show();
+
+  var filter = document.getElementById('filter'), empty = document.getElementById('empty');
+  filter.addEventListener('input', function(){
+    var q = filter.value.trim().toLowerCase(), any = false;
+    var kids = Array.prototype.slice.call(rail.children);
+    var lastH = null, hHas = false;
+    function closeH(){ if (lastH) lastH.hidden = !hHas; }
+    kids.forEach(function(k){
+      if (k.tagName === 'H5'){ closeH(); lastH = k; hHas = false; }
+      else if (k.tagName === 'A'){ var m = !q || k.textContent.toLowerCase().indexOf(q) > -1; k.hidden = !m; if (m){ hHas = true; any = true; } }
+    });
+    closeH(); empty.hidden = any;
+  });
+  function focusFilter(){ if (window.innerWidth <= 860){ rail.classList.add('open'); menu.setAttribute('aria-expanded','true'); } filter.focus(); filter.select(); }
+
+  /* full-text search across every page section */
+  var sbtn = document.getElementById('search'), spanel = document.getElementById('spanel'), sq = document.getElementById('sq'), sres = document.getElementById('sres');
+  var index = [];
+  function txt(el){ var c = el.querySelectorAll('td,th,li'); return c.length ? Array.prototype.map.call(c, function(x){ return x.textContent; }).join(' ') : el.textContent; }
+  function head(el){ var c = el.cloneNode(true); c.querySelectorAll('.pill').forEach(function(x){ x.remove(); }); return c.textContent.trim(); }
+  articles.forEach(function(a){
+    var page = a.querySelector('h1').textContent, cur = { page: page, art: a.id, id: null, title: page, text: '' };
+    Array.prototype.forEach.call(a.children, function(el){
+      if (/^H[23]$/.test(el.tagName)){ index.push(cur); cur = { page: page, art: a.id, id: el.id, title: head(el), text: '' }; }
+      else if (!el.classList.contains('crumbs') && !el.classList.contains('actions')) cur.text += ' ' + txt(el);
+    });
+    index.push(cur);
+  });
+  index.forEach(function(s){ s.text = s.text.replace(/\s+/g,' ').trim(); s.lt = s.text.toLowerCase(); s.lh = s.title.toLowerCase(); });
+  function esc(s){ return s.replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function hl(s, q){ var i = s.toLowerCase().indexOf(q); return i < 0 ? esc(s) : esc(s.slice(0,i)) + '<mark>' + esc(s.slice(i, i+q.length)) + '</mark>' + esc(s.slice(i+q.length)); }
+  var sel = 0, hits = [];
+  function render(){
+    var q = sq.value.trim().toLowerCase();
+    if (!q){ sres.innerHTML = '<p class="shint">Type to search every page.</p>'; hits = []; return; }
+    hits = index.map(function(s){ var sc = (s.lh.indexOf(q) > -1 ? 10 : 0) + (s.lt.indexOf(q) > -1 ? 1 : 0); return { s: s, sc: sc }; })
+                .filter(function(x){ return x.sc > 0; }).sort(function(a,b){ return b.sc - a.sc; }).slice(0, 20);
+    if (!hits.length){ sres.innerHTML = '<p class="shint">No results for “' + esc(sq.value.trim()) + '”.</p>'; return; }
+    sel = 0;
+    sres.innerHTML = hits.map(function(x, i){
+      var s = x.s, j = s.lt.indexOf(q), snip = j < 0 ? s.text.slice(0, 120) : (j > 40 ? '…' : '') + s.text.slice(Math.max(0, j-40), j+90);
+      return '<a href="#' + (s.id || s.art) + '" data-i="' + i + '"' + (i === 0 ? ' class="sel"' : '') + '><span class="w">' + esc(s.page) + '</span><span class="t">' + hl(s.title, q) + '</span><span class="x">' + hl(snip, q) + '</span></a>';
+    }).join('');
+  }
+  function go(i){
+    var s = hits[i] && hits[i].s; if (!s) return;
+    closeSearch();
+    var want = '#' + (s.id || s.art);
+    if (location.hash === want) show(); else location.hash = want;
+  }
+  function openSearch(){ spanel.hidden = false; sbtn.setAttribute('aria-expanded','true'); sq.focus(); sq.select(); render(); }
+  function closeSearch(){ spanel.hidden = true; sbtn.setAttribute('aria-expanded','false'); }
+  sbtn.addEventListener('click', function(){ spanel.hidden ? openSearch() : closeSearch(); });
+  sq.addEventListener('input', render);
+  sres.addEventListener('click', function(e){ if (e.target.closest('a')) closeSearch(); });
+  sq.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); if (!hits.length) return; sel = (sel + (e.key === 'ArrowDown' ? 1 : hits.length - 1)) % hits.length;
+      sres.querySelectorAll('a').forEach(function(a, i){ a.classList.toggle('sel', i === sel); if (i === sel) a.scrollIntoView({ block: 'nearest' }); }); }
+    else if (e.key === 'Enter'){ e.preventDefault(); go(sel); }
+    else if (e.key === 'Escape'){ closeSearch(); sbtn.focus(); }
+  });
+  document.addEventListener('click', function(e){ if (!spanel.hidden && !e.target.closest('.searchwrap')) closeSearch(); });
+  document.addEventListener('keydown', function(e){
+    var typing = /INPUT|TEXTAREA/.test(document.activeElement.tagName);
+    if (e.key === 'k' && (e.metaKey || e.ctrlKey)){ e.preventDefault(); openSearch(); }
+    else if (e.key === '/' && !typing){ e.preventDefault(); focusFilter(); }
+    if (e.key === 'Escape' && document.activeElement === filter){ filter.value=''; filter.dispatchEvent(new Event('input')); filter.blur(); }
+  });
+  document.querySelectorAll('.tabs').forEach(function(t){
+    var btns = t.querySelectorAll('.bar button'), pres = t.querySelectorAll('pre');
+    btns.forEach(function(b,i){ b.addEventListener('click', function(){
+      btns.forEach(function(x,j){ x.classList.toggle('on', i===j); });
+      pres.forEach(function(p,j){ p.classList.toggle('on', i===j); });
+    }); });
+  });
+})();
+</script>
+
+</body>
+</html>
